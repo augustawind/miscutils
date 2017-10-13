@@ -1,5 +1,6 @@
 import pytest
 
+from utils import lists
 from utils.merge import merge
 
 
@@ -42,12 +43,25 @@ class TestMerge(Base):
         self.dict2 = {'x': 8, 'z': 5, 'a': 11}
         self.kwargs = {'z': 9, 'a': 5}
 
+        self.args_groups = lists.inits(
+            (self.base, self.dict1, self.dict2, self.kwargs))
+
         self.result_args_1 = {'x': 1, 'y': 4, 'z': 3}
         self.result_args_2 = {'x': 8, 'y': 4, 'z': 5, 'a': 11}
         self.result_kwargs = {'x': 1, 'y': 2, 'z': 9, 'a': 5}
         self.result_args_1_kwargs = {'x': 1, 'y': 4, 'z': 9, 'a': 5}
 
         yield
+
+    def test_base_none_ok(self):
+        for args in self.args_groups:
+            assert merge(None, *args) is not self.base, \
+                f'base returned from merge(None, ...ARGS) where ARGS={ARGS}'
+
+    def test_same_object_returned(self):
+        for args in self.args_groups:
+            assert merge(*args) is self.base, \
+                f'base not returned from merge(BASE, ..ARGS) where ARGS={ARGS}'
 
 
 class MergeNestedBase(Base):
