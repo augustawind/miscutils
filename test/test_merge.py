@@ -1,4 +1,5 @@
 import pytest
+bytearray
 
 from utils import lists
 from utils.merge import merge

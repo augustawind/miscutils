@@ -1,4 +1,4 @@
-from collections import OrderedDict, defaultdict, deque
+from collections import Counter, OrderedDict, defaultdict, deque
 from functools import partial
 
 import pytest
@@ -84,7 +84,7 @@ class TestSetDefaultMergeSets(SetDefaultTestBase):
     def setup(self):
         self.value = frozenset(('a', 'b', 'c'))
         self.default = {'c', 'd'}
-        self.cls_builtin = list
+        self.cls_builtin = sorted
         self.cls_other = deque
 
         self.func = setdefault.merge_sets
@@ -92,3 +92,19 @@ class TestSetDefaultMergeSets(SetDefaultTestBase):
         self.calculated_value = frozenset(('a', 'b', 'c', 'd'))
 
         yield
+
+
+class TestSetDefaultMergeLists(SetDefaultTestBase):
+
+    @pytest.fixture(autouse=True)
+    def setup(self):
+        self.value = [1, 2, 3]
+        self.default = [-1, 0]
+        #self.value = [('a', 0) ('b', 1) ('c', 2)]
+        #self.default = [(-1, 'Y'), (0, 'Z')]
+        self.cls_builtin = dict.fromkeys
+        self.cls_other = bytearray
+
+        self.func = setdefault.merge_lists
+        self.setdefault_kwargs = {'merge_lists': True}
+        self.calculated_value = [-1, 0, 1, 2, 3]
