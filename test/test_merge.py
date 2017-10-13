@@ -1,6 +1,6 @@
 import pytest
 
-from utils import lists
+from utils import itertools
 from utils.merge import merge
 
 
@@ -43,7 +43,7 @@ class TestMerge(MergeTestBase):
         self.dict2 = {'x': 8, 'z': 5, 'a': 11}
         self.kwargs = {'z': 9, 'a': 5}
 
-        self.args_groups = lists.inits(
+        self.args_groups = itertools.inits(
             (self.base, self.dict1, self.dict2, self.kwargs))
 
         self.result_args_1 = {'x': 1, 'y': 4, 'z': 3}
