@@ -4,7 +4,7 @@ from utils import lists
 from utils.merge import merge
 
 
-class Base:
+class MergeTestBase:
 
     depth = 0
     base = NotImplemented
@@ -34,7 +34,7 @@ class Base:
             merge(self.base, self.dict1, _depth=self.depth, **self.kwargs)
 
 
-class TestMerge(Base):
+class TestMerge(MergeTestBase):
 
     @pytest.fixture(autouse=True)
     def setup(self):
@@ -64,7 +64,7 @@ class TestMerge(Base):
                 f'base not returned from merge(BASE, ..ARGS) where ARGS={ARGS}'
 
 
-class MergeNestedBase(Base):
+class MergeNestedTestBase(MergeTestBase):
 
     def setup(self):
         self.base = {'x': 1,
@@ -79,7 +79,7 @@ class MergeNestedBase(Base):
                        'z': {'b': {'b': {'b': 18}}}}
 
 
-class TestMergeNestedLimit0(MergeNestedBase):
+class TestMergeNestedLimit0(MergeNestedTestBase):
     depth = 0
 
     @pytest.fixture(autouse=True)
@@ -102,7 +102,7 @@ class TestMergeNestedLimit0(MergeNestedBase):
                                      'a': 19}
 
 
-class TestMergeNestedUnlimited(MergeNestedBase):
+class TestMergeNestedUnlimited(MergeNestedTestBase):
     depth = -1
 
     @pytest.fixture(autouse=True)
