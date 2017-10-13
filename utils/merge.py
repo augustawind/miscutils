@@ -2,7 +2,7 @@ import itertools
 from collections import Mapping
 
 
-def merge(base, *args, _depth=1, **kwargs):
+def merge(base, *args, _depth=0, **kwargs):
     """Compose one or more mappings with kwargs.
 
     Args are merged into ``base`` sequentially, each overriding previous keys.
@@ -12,6 +12,7 @@ def merge(base, *args, _depth=1, **kwargs):
     Args:
         base (Mapping): The base mapping.
         *args: Additional mappings.
+        _depth (int): The depth to merge nested dicts. 
         **kwargs: Key/value paids.
 
     Returns:
