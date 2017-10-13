@@ -1,3 +1,4 @@
+from collections import Mapping, MutableSequence, Set
 from functools import partial
 
 from .merge import merge
@@ -36,13 +37,17 @@ def setdefault(value, default, cls=None, merge_lists=False, merge_sets=False,
         setdefault.merge_lists (function): Run with `merge_lists` enabled.
         setdefault.merge_sets (function): Run with `merge_sets` enabled.
     """
+    value_cls = None
+
     if value is not None and default is not None:
+        value_cls = type(value)
         if merge_dicts:
-            value = _setdefault_dict(value, default, cls)
+            value = _setdefault_dict(value, default, depth)
         if merge_lists:
-            value = _setdefault_list(value, default, cls)
+            value = _setdefault_list(value, default)
         if merge_sets:
-            value = _setdefault_set(value, default, cls)
+            value = _setdefault_set(value, default)
+        value = value_cls(value)
 
     elif value is None:
         if default is None:
@@ -50,25 +55,27 @@ def setdefault(value, default, cls=None, merge_lists=False, merge_sets=False,
         value = default
 
     if cls:
-        value = cls(value)
+        return cls(value)
+    elif value_cls:
+        return value_cls(value)
     return value
 
 
-def _setdefault_dict(value, default, cls):
-    if issubclass(cls, Mapping):
-        return merge_mappings(None, default, value, _type=cls)
+def _setdefault_dict(value, default, depth):
+    if isinstance(value, Mapping):
+        return merge(None, default, value, _depth=depth)
     return value
 
 
-def _setdefault_set(value, default, cls):
-    if issubclass(cls, Set):
+def _setdefault_set(value, default):
+    if isinstance(value, Set):
         return value | default
     return value
 
 
-def _setdefault_list(value, default, cls):
-    if issubclass(cls, MutableSequence):
-        return cls(*default, *value)
+def _setdefault_list(value, default):
+    if isinstance(value, MutableSequence):
+        return [*default, *value]
     return value
 
 

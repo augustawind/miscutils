@@ -100,6 +100,7 @@ class TestMergeNestedLimit0(MergeNestedTestBase):
                                      'y': 2,
                                      'z': {'b': {'b': {'b': 18}}},
                                      'a': 19}
+        yield
 
 
 class TestMergeNestedUnlimited(MergeNestedTestBase):
@@ -125,4 +126,5 @@ class TestMergeNestedUnlimited(MergeNestedTestBase):
                                                                'c': 13}},
                                            'c': 7},
                                      'a': 19}
+        yield
 

@@ -8,14 +8,13 @@ from utils.setdefault import setdefault
 
 
 class SetDefaultTestBase:
-
-    func = setdefault
-
     value = NotImplemented
     default = NotImplemented
-    cls = None
-    other_cls = None
+    cls_builtin = NotImplemented
+    cls_other = NotImplemented
 
+    func = NotImplemented
+    setdefault_kwargs = NotImplemented
     calculated_value = NotImplemented
 
     def test_both_values(self):
@@ -28,44 +27,55 @@ class SetDefaultTestBase:
         assert self.func(self.value, None) == self.value
 
     def test_both_values_with_cls(self):
-        assert self.func(self.value, self.default, cls=self.cls) == \
-            self.cls(self.calculated_value)
+        assert self.func(self.value, self.default, cls=self.cls_builtin) == \
+            self.cls_builtin(self.calculated_value)
 
     def test_one_value_with_cls(self):
-        assert self.func(None, self.value, cls=self.cls) == \
-            self.cls(self.value)
-        assert self.func(self.value, None, cls=self.cls) == \
-            self.cls(self.value)
+        assert self.func(None, self.value, cls=self.cls_builtin) == \
+            self.cls_builtin(self.value)
+        assert self.func(self.value, None, cls=self.cls_builtin) == \
+            self.cls_builtin(self.value)
 
     def test_one_value_with_non_builtin_cls(self):
-        value = self.other_cls()
-        assert type(self.func(value, None)) == self.other_cls
-        assert type(self.func(None, value)) == self.other_cls
+        value = self.cls_other()
+        assert type(self.func(value, None)) == self.cls_other
+        assert type(self.func(None, value)) == self.cls_other
+
+    def test_shorthand_function_vs_kwarg(self):
+        assert self.func(self.value, self.default) == \
+            setdefault(self.value, self.default, **self.setdefault_kwargs)
 
 
 class TestSetDefaultSimple(SetDefaultTestBase):
 
     @pytest.fixture(autouse=True)
     def setup(self):
-        self.func = setdefault
-
         self.value = 5
         self.default = 11
-        self.cls = str
-        self.other_cls = OrderedDict
+        self.cls_builtin = str
+        self.cls_other = OrderedDict
 
+        self.func = setdefault
+        self.setdefault_kwargs = {}
         self.calculated_value = self.value
 
+        yield
 
-class TestSetDefaultMergeDicts:
+
+class TestSetDefaultMergeDicts(SetDefaultTestBase):
 
     @pytest.fixture(autouse=True)
     def setup(self):
-        self.func = partial(setdefault.merge_dicts, depth=-1)
-
         self.value = {'a': 1, 'b': {'x': 9}}
         self.default = {'a': 3, 'b': {'y': 8}, 'c': 5}
-        self.cls = tuple
-        self.other_cls = OrderedDict
+        self.cls_builtin = tuple
+        self.cls_other = OrderedDict
 
-        self.calculated_value = merge(self.default, self.value)
+        self.func = partial(setdefault.merge_dicts, depth=-1)
+        self.setdefault_kwargs = {'merge_dicts': True}
+        self.calculated_value = merge(self.default, self.value, _depth=-1)
+
+        yield
+
+
+#class TestSetDefault
