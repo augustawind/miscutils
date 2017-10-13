@@ -36,24 +36,21 @@ def setdefault(value, default, cls=None, merge_lists=False, merge_sets=False,
         setdefault.merge_lists (function): Run with `merge_lists` enabled.
         setdefault.merge_sets (function): Run with `merge_sets` enabled.
     """
-    if value is None:
-        if cls:
-            return cls(default)
-        return default
-    if default is None:
-        if cls:
-            return cls(value)
-        return value
+    if value is not None and default is not None:
+        if merge_dicts:
+            value = _setdefault_dict(value, default, cls)
+        if merge_lists:
+            value = _setdefault_list(value, default, cls)
+        if merge_sets:
+            value = _setdefault_set(value, default, cls)
 
-    if not cls:
-        cls = type(value)
+    elif value is None:
+        if default is None:
+            return None
+        value = default
 
-    if merge_dicts:
-        return _setdefault_dict(value, default, cls)
-    if merge_lists:
-        return _setdefault_list(value, default, cls)
-    if merge_sets:
-        return _setdefault_set(value, default, cls)
+    if cls:
+        value = cls(value)
     return value
 
 
