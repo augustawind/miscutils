@@ -27,7 +27,7 @@ def merge(base, *args, _depth=1, **kwargs):
             if _depth != 0 and isinstance(val, Mapping):
                 base_val = base.get(key)
                 if isinstance(base_val, Mapping):
-                    base[key] = merge_deep(base_val, val, _depth=_depth - 1)
+                    base[key] = merge(base_val, val, _depth=_depth - 1)
                     continue
             base[key] = val
     return base
