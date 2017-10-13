@@ -1,4 +1,4 @@
-from collections import OrderedDict, defaultdict
+from collections import OrderedDict, defaultdict, deque
 from functools import partial
 
 import pytest
@@ -67,9 +67,9 @@ class TestSetDefaultMergeDicts(SetDefaultTestBase):
     @pytest.fixture(autouse=True)
     def setup(self):
         self.value = {'a': 1, 'b': {'x': 9}}
-        self.default = {'a': 3, 'b': {'y': 8}, 'c': 5}
+        self.default = OrderedDict({'a': 3, 'b': {'y': 8}, 'c': 5})
         self.cls_builtin = tuple
-        self.cls_other = OrderedDict
+        self.cls_other = defaultdict
 
         self.func = partial(setdefault.merge_dicts, depth=-1)
         self.setdefault_kwargs = {'merge_dicts': True}
@@ -78,4 +78,17 @@ class TestSetDefaultMergeDicts(SetDefaultTestBase):
         yield
 
 
-#class TestSetDefault
+class TestSetDefaultMergeSets(SetDefaultTestBase):
+
+    @pytest.fixture(autouse=True)
+    def setup(self):
+        self.value = frozenset(('a', 'b', 'c'))
+        self.default = {'c', 'd'}
+        self.cls_builtin = list
+        self.cls_other = deque
+
+        self.func = setdefault.merge_sets
+        self.setdefault_kwargs = {'merge_sets': True}
+        self.calculated_value = frozenset(('a', 'b', 'c', 'd'))
+
+        yield
