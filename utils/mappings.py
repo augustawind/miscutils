@@ -1,14 +1,12 @@
 from collections.abc import Mapping
 
 
+def subset(m0, m1):
+    return {k: v for k, v in m0.items() if k in m1}
+
+
 class Namespace(dict):
     """A dict that supports dot-access on its items."""
-
-    def __getstate__(self):
-        return self.copy()
-
-    def __setstate__(self, state):
-        self.update(state)
 
     def __getattr__(self, attr):
         return self.__getitem__(attr)

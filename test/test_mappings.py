@@ -29,11 +29,9 @@ class Namespace:
         with pytest.raises(KeyError):
             ns['x']
 
-    def test_copy(self, ns):
-        assert copy.copy(ns) == ns
-
-    def test_deepcopy(self):
+    def test_copy(self):
         ns = maps.Namespace((('a', 0), ('b', maps.Namespace('x', 9))), c=5)
+        assert copy.copy(ns) == ns
         assert copy.deepcopy(ns) == ns
 
 
@@ -73,3 +71,8 @@ class TestFrozenDict:
                     del d[k]
                 with pytest.raises(KeyError):
                     d[k]
+
+    def test_copy(self):
+        d = maps.FrozenDict(a=1, b=maps.FrozenDict(c=3))
+        assert copy.copy(d) == d
+        assert copy.deepcopy(d) == d
