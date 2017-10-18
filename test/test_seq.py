@@ -14,14 +14,20 @@ def test_tails():
 
 
 def test_cons():
-    assert hasattr(seq.cons(1, [2, 3]), '__next__')
     assert tuple(seq.cons(1, [2, 3])) == (1, 2, 3)
     assert list(seq.cons(1, (2, 3))) == [1, 2, 3]
-    assert list(seq.cons(1, iter([2, 3]))) == [1, 2, 3]
+    assert list(seq.cons(1, range(2, 4))) == [1, 2, 3]
 
 
 def test_rcons():
-    assert hasattr(seq.rcons(1, [2, 3]), '__next__')
     assert tuple(seq.rcons(1, [2, 3])) == (2, 3, 1)
     assert list(seq.rcons(1, (2, 3))) == [2, 3, 1]
-    assert list(seq.rcons(1, iter([2, 3]))) == [2, 3, 1]
+    assert list(seq.rcons(1, range(2, 4))) == [2, 3, 1]
+
+
+def test_insert():
+    assert list(seq.insert(2, 11, range(0, 5))) == [0, 1, 11, 2, 3, 4]
+
+
+def test_intersperse():
+    assert ''.join(seq.intersperse('-', 'abcd')) == 'a-b-c-d'

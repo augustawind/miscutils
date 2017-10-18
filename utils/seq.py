@@ -22,10 +22,12 @@ def rcons(item, iterable):
 def insert(i, item, iterable):
     yield from islice(iterable, i)
     yield item
-    yield from iterable
+    yield from islice(iterable, i, None)
 
 
 def intersperse(item, iterable):
+    if not hasattr(iterable, '__next__'):
+        iterable = iter(iterable)
     yield next(iterable)
     for x in iterable:
         yield item
