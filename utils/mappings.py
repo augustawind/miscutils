@@ -29,3 +29,10 @@ class FrozenDict(Mapping):
 
     def __len__(self):
         return len(self.__dict)
+
+
+class MultiDict(dict):
+
+    def __init__(self, *args, **kwargs):
+        items = dict(*args, **kwargs).items()
+        super().__init__((k, val) for key, val in items for k in key)
