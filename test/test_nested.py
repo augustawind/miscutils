@@ -1,3 +1,5 @@
+from types import SimpleNamespace
+
 import pytest
 
 from utils import nested
@@ -6,38 +8,48 @@ from utils import nested
 class TestNestedGet:
 
     def test_01_dict(self):
-        value = {'foo': 5}
-        assert nested.get(value, '[foo]') == 5
-        value = {'foo': {'bar': 6}}
-        assert nested.get(value, '[foo]') == {'bar': 6}
-        assert nested.get(value, '[foo][bar]') == 6
+        val = {'foo': 5}
+        assert nested.get(val, '[foo]') == 5
+        val = {'foo': {'bar': 6}}
+        assert nested.get(val, '[foo]') == {'bar': 6}
+        assert nested.get(val, '[foo][bar]') == 6
 
-        value = {'foo': {'bar': 6}}
+        val = {'foo': {'bar': 6}}
         with pytest.raises(nested.MissingValue):
-            nested.get(value, '[')
+            nested.get(val, '[')
         with pytest.raises(nested.MissingOpenOperator):
-            nested.get(value, 'foo')
+            nested.get(val, 'foo')
         with pytest.raises(nested.MissingOpenOperator):
-            nested.get(value, '[foo]bar')
+            nested.get(val, '[foo]bar')
         with pytest.raises(nested.MissingCloseOperator):
-            nested.get(value, '[foo')
+            nested.get(val, '[foo')
         with pytest.raises(nested.MissingCloseOperator):
-            nested.get(value, '[foo][bar')
+            nested.get(val, '[foo][bar')
         with pytest.raises(nested.MissingCloseOperator):
-            nested.get(value, '[foo[bar]')
+            nested.get(val, '[foo[bar]')
 
     def test_01_list(self):
-        value = [5]
-        assert nested.get(value, '#0') == 5
-        value = [5, 3]
-        assert nested.get(value, '#0') == 5
-        assert nested.get(value, '#1') == 3
-        value = [5, 3, [9]]
-        assert nested.get(value, '#2') == [9]
-        assert nested.get(value, '#2#0') == 9
+        val = [5]
+        assert nested.get(val, '#0') == 5
+        val = [5, 3]
+        assert nested.get(val, '#0') == 5
+        assert nested.get(val, '#1') == 3
+        val = [5, 3, [9]]
+        assert nested.get(val, '#2') == [9]
+        assert nested.get(val, '#2#0') == 9
 
-        value = [5, 3, [9]]
+        val = [5, 3, [9]]
         with pytest.raises(nested.MissingValue):
-            nested.get(value, '#')
+            nested.get(val, '#')
         with pytest.raises(nested.MissingValue):
-            nested.get(value, '#2#')
+            nested.get(val, '#2#')
+
+    def test_01_object(self):
+        val = SimpleNamespace(x=5)
+        assert nested.get(val, '.x') == 5
+        val = SimpleNamespace(x=5, y=3)
+        assert nested.get(val, '.x') == 5
+        assert nested.get(val, '.y') == 3
+        val = SimpleNamespace(x=5, y=3, z=SimpleNamespace(a=9))
+        assert nested.get(val, '.z') == SimpleNamespace(a=9)
+        assert nested.get(val, '.z.a') == 9
