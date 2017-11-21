@@ -65,3 +65,18 @@ class TestNestedGet:
             nested.get(val, '.')
         with pytest.raises(nested.MissingValue):
             nested.get(val, '.z.')
+
+    def test_03_mapping_mixed(self):
+        val = {
+            'x': [5, [
+                Object(
+                    y={'z': 9})]]}
+        assert nested.get(val, '[x]#0') == 5
+        assert nested.get(val, '[x]#1#0.y') == {'z': 9}
+        assert nested.get(val, '[x]#1#0.y[z]') == 9
+
+    def test_03_sequence_mixed(self):
+        val = Object(x=5)
+
+    def test_03_object_mixed(self):
+        val = Object(x=5)
