@@ -92,7 +92,14 @@ class TestNestedGet:
         pass
 
     def test_03_object_mixed(self):
-        val = Object(x=5)
+        val = Object(x=Object(
+            y={'z': 5,
+                'a': [-2,
+                      {'b': 9}]}))
+        assert nested.get(val, '.x.y[z]') == 5
+        assert nested.get(val, '.x.y[a]#0') == -2
+        assert nested.get(val, '.x.y[a]#1') == {'b': 9}
+        assert nested.get(val, '.x.y[a]#1[b]') == 9
 
     def test_04_object_mixed_validation(self):
         val = Object(x=5)
