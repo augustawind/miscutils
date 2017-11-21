@@ -12,6 +12,15 @@ class TestNestedGet:
         assert nested.get(value, '[foo]') == {'bar': 6}
         assert nested.get(value, '[foo][bar]') == 6
 
+        with pytest.raises(nested.UnfinishedOperation):
+            nested.get(value, '[')
+        with pytest.raises(nested.UnfinishedOperation):
+            nested.get(value, '[foo')
+        with pytest.raises(nested.UnfinishedOperation):
+            nested.get(value, '[foo][bar')
+        with pytest.raises(nested.UnfinishedOperation):
+            nested.get(value, '[foo[bar]')
+
     def test_01_list(self):
         value = [5]
         assert nested.get(value, '#0') == 5

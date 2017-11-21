@@ -9,12 +9,12 @@ OP_STARTS = OrderedDict((
     ('[', Operation.KEY),
     ('#', Operation.INDEX),
 ))
-OP_ENDS = {
-    Operation.KEY: [']'],
-}
+OP_ENDS = OrderedDict((
+    (Operation.KEY, ']'),
+))
 OP_CHARS = [
     *OP_STARTS.keys(),
-    *(v for value in OP_ENDS.values() for v in value)
+    *OP_ENDS.values(),
 ]
 
 OPS_REPR = ' , '.join(f"'{char}'" for char in OP_STARTS.keys())
@@ -49,10 +49,12 @@ def _parse(path):
             instructions.append(Instruction(item, operation))
             item = ''
 
-            if char in OP_ENDS.get(operation, ()):
+            end_op_char = OP_ENDS.get(operation)
+            if end_op_char:
                 if new_op:
                     raise UnfinishedOperation(operation, char)
-                operation = None
+                if char == end_op_char:
+                    operation = None
             elif new_op:
                 operation = new_op
 
