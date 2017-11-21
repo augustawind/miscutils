@@ -8,26 +8,29 @@ from utils import nested
 class TestNestedGet:
 
     def test_01_mapping(self):
-        val = {'foo': 5}
-        assert nested.get(val, '[foo]') == 5
-        val = {'foo': {'bar': 6}}
-        assert nested.get(val, '[foo]') == {'bar': 6}
-        assert nested.get(val, '[foo][bar]') == 6
+        val = {'x': 5}
+        assert nested.get(val, '[x]') == 5
+        val = {'x': 5, 'y': 3}
+        assert nested.get(val, '[x]') == 5
+        assert nested.get(val, '[y]') == 3
+        val = {'x': {'y': 6}}
+        assert nested.get(val, '[x]') == {'y': 6}
+        assert nested.get(val, '[x][y]') == 6
 
     def test_02_mapping_validation(self):
-        val = {'foo': {'bar': 6}}
+        val = {'x': {'y': 6}}
         with pytest.raises(nested.MissingValue):
             nested.get(val, '[')
         with pytest.raises(nested.MissingOpenOperator):
-            nested.get(val, 'foo')
+            nested.get(val, 'x')
         with pytest.raises(nested.MissingOpenOperator):
-            nested.get(val, '[foo]bar')
+            nested.get(val, '[x]y')
         with pytest.raises(nested.MissingCloseOperator):
-            nested.get(val, '[foo')
+            nested.get(val, '[x')
         with pytest.raises(nested.MissingCloseOperator):
-            nested.get(val, '[foo][bar')
+            nested.get(val, '[x][y')
         with pytest.raises(nested.MissingCloseOperator):
-            nested.get(val, '[foo[bar]')
+            nested.get(val, '[x[y]')
 
     def test_01_sequence(self):
         val = [5]
