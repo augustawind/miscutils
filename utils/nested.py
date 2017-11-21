@@ -1,6 +1,8 @@
 from collections import OrderedDict, namedtuple
 from enum import Enum
 
+__all__ = ['get']
+
 Operation = Enum('Operation', 'ATTR KEY INDEX')
 Instruction = namedtuple('Instruction', 'item operation')
 
@@ -17,8 +19,6 @@ OP_CHARS = [
     *OP_ENDS.values(),
 ]
 
-OPS_REPR = ' , '.join(f"'{char}'" for char in OP_STARTS.keys())
-
 
 class UnfinishedOperation(ValueError):
 
@@ -28,19 +28,29 @@ class UnfinishedOperation(ValueError):
             f" expected closing char '{OP_ENDS[op]}'")
 
 
-def _parse(path):
+class MissingOperator(ValueError):
+
+    START_OPS_REPR = ' , '.join(f"'{char}'" for char in OP_STARTS.keys())
+
+    def __init__(self, char):
+        super().__init__(
+            f"missing operator; expected an operator char"
+            f" but found '{char}' (must be one of: {START_OPS_REPR})")
+
+
+def parse_instructions(path):
     instructions = []
     operation = None
     item = ''
 
     for char in path:
         new_op = OP_STARTS.get(char)
+
         if operation is None:
             if new_op:
                 operation = new_op
             else:
-                raise ValueError(
-                    f"expected an operator ({OPS_REPR}) but got '{char}'")
+                raise MissingOperator(char)
         else:
             if char not in OP_CHARS:
                 item += char
@@ -71,7 +81,7 @@ def _parse(path):
 
 
 def get(value, path):
-    instructions = _parse(path)
+    instructions = parse_instructions(path)
     for instruction in instructions:
         if instruction.operation is Operation.ATTR:
             value = getattr(value, instruction.item)
@@ -80,5 +90,6 @@ def get(value, path):
         elif instruction.operation is Operation.INDEX:
             value = value[int(instruction.item)]
         else:
-            raise ValueError(f'unexpected operation `{instruction.operation}`')
+            raise ValueError("PROGRAM ERROR: unexpected operation"
+                             f" `{instruction.operation}`")
     return value
