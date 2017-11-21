@@ -12,17 +12,18 @@ class TestNestedGet:
         assert nested.get(value, '[foo]') == {'bar': 6}
         assert nested.get(value, '[foo][bar]') == 6
 
-        with pytest.raises(nested.MissingOperator):
-            nested.get(value, 'foo')
-        with pytest.raises(nested.MissingOperator):
-            nested.get(value, '[foo]bar')
-        with pytest.raises(nested.UnfinishedOperation):
+        value = {'foo': {'bar': 6}}
+        with pytest.raises(nested.MissingValue):
             nested.get(value, '[')
-        with pytest.raises(nested.UnfinishedOperation):
+        with pytest.raises(nested.MissingOpenOperator):
+            nested.get(value, 'foo')
+        with pytest.raises(nested.MissingOpenOperator):
+            nested.get(value, '[foo]bar')
+        with pytest.raises(nested.MissingCloseOperator):
             nested.get(value, '[foo')
-        with pytest.raises(nested.UnfinishedOperation):
+        with pytest.raises(nested.MissingCloseOperator):
             nested.get(value, '[foo][bar')
-        with pytest.raises(nested.UnfinishedOperation):
+        with pytest.raises(nested.MissingCloseOperator):
             nested.get(value, '[foo[bar]')
 
     def test_01_list(self):
@@ -34,3 +35,9 @@ class TestNestedGet:
         value = [5, 3, [9]]
         assert nested.get(value, '#2') == [9]
         assert nested.get(value, '#2#0') == 9
+
+        value = [5, 3, [9]]
+        with pytest.raises(nested.MissingValue):
+            nested.get(value, '#')
+        with pytest.raises(nested.MissingValue):
+            nested.get(value, '#2#')

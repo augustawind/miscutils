@@ -1,7 +1,8 @@
 from collections import OrderedDict, namedtuple
 from enum import Enum
 
-__all__ = ['get']
+__all__ = ['get', 'MissingCloseOperator', 'MissingOpenOperator',
+          'MissingValue']
 
 Operation = Enum('Operation', 'ATTR KEY INDEX')
 Instruction = namedtuple('Instruction', 'item operation')
@@ -20,25 +21,34 @@ OP_CHARS = [
 ]
 
 
-class UnfinishedOperation(ValueError):
+class MissingCloseOperator(ValueError):
 
     def __init__(self, op, char):
         super().__init__(
-            f"unfinished `{op.name}` operation started with char '{char}';"
+            f"missing close operator: operation started with char '{char}':"
             f" expected closing char '{CLOSE_OPS[op]}'")
 
 
-class MissingOperator(ValueError):
+class MissingOpenOperator(ValueError):
 
     open_ops_repr = ' , '.join(f"'{char}'" for char in OPEN_OPS.keys())
 
     def __init__(self, char):
         super().__init__(
-            f"missing operator; expected an operator char"
+            f"missing open operator: expected an operator char"
             f" but found '{char}' (must be one of: {self.open_ops_repr})")
 
 
+class MissingValue(ValueError):
+
+    def __init__(self, op):
+        op_char = [char for char, operator in OPEN_OPS.items()
+                   if op is operator][0]
+        super().__init__(f"missing value after open operator `{op_char}`")
+
+
 def parse_instructions(path):
+    """Attempt to parse a string into instructions for modifying an object."""
     instructions = []
     operation = None
     item = ''
@@ -50,7 +60,7 @@ def parse_instructions(path):
             if new_op:
                 operation = new_op
             else:
-                raise MissingOperator(char)
+                raise MissingOpenOperator(char)
         else:
             if char not in OP_CHARS:
                 item += char
@@ -62,18 +72,21 @@ def parse_instructions(path):
             end_op_char = CLOSE_OPS.get(operation)
             if end_op_char:
                 if new_op:
-                    raise UnfinishedOperation(operation, char)
+                    raise MissingCloseOperator(operation, char)
                 if char == end_op_char:
                     operation = None
             elif new_op:
                 operation = new_op
 
     if operation is not None:
+        if not item:
+            raise MissingValue(operation)
+
         if operation in CLOSE_OPS:
             for char, op in OPEN_OPS.items():
                 if op is operation:
                     break
-            raise UnfinishedOperation(op, char)
+            raise MissingCloseOperator(operation, char)
 
         instructions.append(Instruction(item, operation))
 
@@ -81,6 +94,7 @@ def parse_instructions(path):
 
 
 def get(value, path):
+    """Fetch an arbitrarily nested value from the given object."""
     instructions = parse_instructions(path)
     for instruction in instructions:
         if instruction.operation is Operation.ATTR:
