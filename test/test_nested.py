@@ -67,16 +67,32 @@ class TestNestedGet:
             nested.get(val, '.z.')
 
     def test_03_mapping_mixed(self):
-        val = {
-            'x': [5, [
-                Object(
-                    y={'z': 9})]]}
+        val = {'x':
+               [5,
+                [Object(
+                    y={'z':9})]]}
         assert nested.get(val, '[x]#0') == 5
         assert nested.get(val, '[x]#1#0.y') == {'z': 9}
         assert nested.get(val, '[x]#1#0.y[z]') == 9
 
+    def test_04_mapping_mixed_validation(self):
+        pass
+
     def test_03_sequence_mixed(self):
-        val = Object(x=5)
+        val = [True,
+               {'x':
+                {'y':
+                 Object(
+                     z=[9])}}]
+        assert nested.get(val, '#0') == True
+        assert nested.get(val, '#1[x][y]') == Object(z=[9])
+        assert nested.get(val, '#1[x][y].z#0') == 9
+
+    def test_04_sequence_mixed_validation(self):
+        pass
 
     def test_03_object_mixed(self):
+        val = Object(x=5)
+
+    def test_04_object_mixed_validation(self):
         val = Object(x=5)
