@@ -19,7 +19,7 @@ class TestNestedGet:
 
     def test_02_mapping_validation(self):
         val = {'x': {'y': 6}}
-        with pytest.raises(nested.MissingValue):
+        with pytest.raises(nested.MissingValueChar):
             nested.get(val, '[')
         with pytest.raises(nested.MissingOpenOperator):
             nested.get(val, 'x')
@@ -31,6 +31,8 @@ class TestNestedGet:
             nested.get(val, '[x][y')
         with pytest.raises(nested.MissingCloseOperator):
             nested.get(val, '[x[y]')
+        with pytest.raises(KeyError):
+            nested.get(val, '[x][z]')
 
     def test_01_sequence(self):
         val = [5]
@@ -44,10 +46,12 @@ class TestNestedGet:
 
     def test_02_sequence_validation(self):
         val = [5, 3, [9]]
-        with pytest.raises(nested.MissingValue):
+        with pytest.raises(nested.MissingValueChar):
             nested.get(val, '#')
-        with pytest.raises(nested.MissingValue):
+        with pytest.raises(nested.MissingValueChar):
             nested.get(val, '#2#')
+        with pytest.raises(IndexError):
+            nested.get(val, '#2#1')
 
     def test_01_object(self):
         val = Object(x=5)
@@ -61,17 +65,20 @@ class TestNestedGet:
 
     def test_02_object_validation(self):
         val = Object(x=5, y=3, z=Object(a=9))
-        with pytest.raises(nested.MissingValue):
+        with pytest.raises(nested.MissingValueChar):
             nested.get(val, '.')
-        with pytest.raises(nested.MissingValue):
+        with pytest.raises(nested.MissingValueChar):
             nested.get(val, '.z.')
+        with pytest.raises(AttributeError):
+            nested.get(val, '.z.b')
 
     @staticmethod
     def _make_mixed_mapping():
         return {'x':
                 [5,
                  [Object(
-                     y={'z':9})]]}
+                     y={
+                         'z':9})]]}
 
     def test_03_mapping_mixed(self):
         val = self._make_mixed_mapping()
@@ -80,7 +87,19 @@ class TestNestedGet:
         assert nested.get(val, '[x]#1#0.y[z]') == 9
 
     def test_04_mapping_mixed_validation(self):
-        pass
+        val = self._make_mixed_mapping()
+        with pytest.raises(nested.MissingValueChar):
+            nested.get(val, '[x]#')
+        with pytest.raises(nested.MissingValueChar):
+            nested.get(val, '[x]#1#0.')
+        with pytest.raises(nested.MissingValueChar):
+            nested.get(val, '[x]#1#0.y[')
+        with pytest.raises(nested.MissingOpenOperator):
+            nested.get(val, '[x]1')
+        with pytest.raises(nested.MissingCloseOperator):
+            nested.get(val, '[x]#1#0.y[z')
+        with pytest.raises(nested.UnexpectedCloseOperator):
+            nested.get(val, '[x]#1#0.yz]')
 
     @staticmethod
     def _make_mixed_sequence():
