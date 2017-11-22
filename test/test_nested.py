@@ -66,11 +66,15 @@ class TestNestedGet:
         with pytest.raises(nested.MissingValue):
             nested.get(val, '.z.')
 
+    @staticmethod
+    def _make_mixed_mapping():
+        return {'x':
+                [5,
+                 [Object(
+                     y={'z':9})]]}
+
     def test_03_mapping_mixed(self):
-        val = {'x':
-               [5,
-                [Object(
-                    y={'z':9})]]}
+        val = self._make_mixed_mapping()
         assert nested.get(val, '[x]#0') == 5
         assert nested.get(val, '[x]#1#0.y') == {'z': 9}
         assert nested.get(val, '[x]#1#0.y[z]') == 9
@@ -78,12 +82,16 @@ class TestNestedGet:
     def test_04_mapping_mixed_validation(self):
         pass
 
+    @staticmethod
+    def _make_mixed_sequence():
+        return [True,
+                {'x':
+                 {'y':
+                  Object(
+                      z=[9])}}]
+
     def test_03_sequence_mixed(self):
-        val = [True,
-               {'x':
-                {'y':
-                 Object(
-                     z=[9])}}]
+        val = self._make_mixed_sequence()
         assert nested.get(val, '#0') == True
         assert nested.get(val, '#1[x][y]') == Object(z=[9])
         assert nested.get(val, '#1[x][y].z#0') == 9
@@ -91,11 +99,16 @@ class TestNestedGet:
     def test_04_sequence_mixed_validation(self):
         pass
 
+    @staticmethod
+    def _make_mixed_object():
+        return Object(x=
+                      Object(y={
+                          'z': 5, 'a': [
+                              -2,
+                              {'b': 9}]}))
+
     def test_03_object_mixed(self):
-        val = Object(x=Object(
-            y={'z': 5,
-                'a': [-2,
-                      {'b': 9}]}))
+        val = self._make_mixed_object()
         assert nested.get(val, '.x.y[z]') == 5
         assert nested.get(val, '.x.y[a]#0') == -2
         assert nested.get(val, '.x.y[a]#1') == {'b': 9}
