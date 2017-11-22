@@ -116,7 +116,13 @@ class TestNestedGet:
         assert nested.get(val, '#1[x][y].z#0') == 9
 
     def test_04_sequence_mixed_validation(self):
-        pass
+        val = self._make_mixed_sequence()
+        with pytest.raises(nested.MissingValueChar):
+            nested.get(val, '#1[')
+        with pytest.raises(nested.MissingValueChar):
+            nested.get(val, '#1[x][y].')
+        with pytest.raises(IndexError):
+            nested.get(val, '#2')
 
     @staticmethod
     def _make_mixed_object():
@@ -134,4 +140,10 @@ class TestNestedGet:
         assert nested.get(val, '.x.y[a]#1[b]') == 9
 
     def test_04_object_mixed_validation(self):
-        val = Object(x=5)
+        val = self._make_mixed_object()
+        with pytest.raises(nested.MissingValueChar):
+            nested.get(val, '.x.')
+        with pytest.raises(nested.MissingValueChar):
+            nested.get(val, '.x.y[a]#')
+        with pytest.raises(AttributeError):
+            nested.get(val, '.x.z')
