@@ -5,7 +5,7 @@ import pytest
 from utils import nested
 
 
-class TestNestedGet:
+class TestGet:
 
     def test_01_mapping(self):
         val = {'x': 5}
