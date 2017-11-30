@@ -106,10 +106,6 @@ class TestGet(Common):
         assert nested.get(val, '[x]') == {'y': 6}
         assert nested.get(val, '[x][y]') == 6
 
-    def test_02_mapping_validation(self):
-        val = {'x': {'y': 6}}
-        self.check_mapping_validation(val, nested.get)
-
     def test_01_sequence(self):
         val = [5]
         assert nested.get(val, '#0') == 5
@@ -119,10 +115,6 @@ class TestGet(Common):
         val = [5, 3, [9]]
         assert nested.get(val, '#2') == [9]
         assert nested.get(val, '#2#0') == 9
-
-    def test_02_sequence_validation(self):
-        data = [5, 3, [9]]
-        self.check_sequence_validation(data, nested.get)
 
     def test_01_object(self):
         val = Object(x=5)
@@ -134,6 +126,14 @@ class TestGet(Common):
         assert nested.get(val, '.z') == Object(a=9)
         assert nested.get(val, '.z.a') == 9
 
+    def test_02_mapping_validation(self):
+        val = {'x': {'y': 6}}
+        self.check_mapping_validation(val, nested.get)
+
+    def test_02_sequence_validation(self):
+        data = [5, 3, [9]]
+        self.check_sequence_validation(data, nested.get)
+
     def test_02_object_validation(self):
         data = Object(x=5, y=3, z=Object(a=9))
         self.check_object_validation(data, nested.get)
@@ -144,19 +144,11 @@ class TestGet(Common):
         assert nested.get(val, '[x]#1#0.y') == {'z': 9}
         assert nested.get(val, '[x]#1#0.y[z]') == 9
 
-    def test_04_mapping_mixed_validation(self):
-        data = self._make_mixed_mapping()
-        self.check_mapping_mixed_validation(data, nested.get)
-
     def test_03_sequence_mixed(self):
         val = self._make_mixed_sequence()
         assert nested.get(val, '#0') == True
         assert nested.get(val, '#1[x][y]') == Object(z=[9])
         assert nested.get(val, '#1[x][y].z#0') == 9
-
-    def test_04_sequence_mixed_validation(self):
-        data = self._make_mixed_sequence()
-        self.check_sequence_mixed_validation(data, nested.get)
 
     def test_03_object_mixed(self):
         val = self._make_mixed_object()
@@ -164,6 +156,14 @@ class TestGet(Common):
         assert nested.get(val, '.x.y[a]#0') == -2
         assert nested.get(val, '.x.y[a]#1') == {'b': 9}
         assert nested.get(val, '.x.y[a]#1[b]') == 9
+
+    def test_04_mapping_mixed_validation(self):
+        data = self._make_mixed_mapping()
+        self.check_mapping_mixed_validation(data, nested.get)
+
+    def test_04_sequence_mixed_validation(self):
+        data = self._make_mixed_sequence()
+        self.check_sequence_mixed_validation(data, nested.get)
 
     def test_04_object_mixed_validation(self):
         data = self._make_mixed_object()
@@ -173,73 +173,71 @@ class TestGet(Common):
 class TestSet(Common):
 
     def test_01_mapping(self):
-        val = {'x': 5}
-        nested.set(val, '[x]', 8)
-        assert val['x'] == 8
+        data = {'x': 5}
+        nested.set(data, '[x]', value=8)
+        assert data['x'] == 8
 
-        val = {'x': 5, 'y': 3}
-        nested.set(val, '[x]', 8)
-        assert val['x'] == 8
-        nested.set(val, '[y]', -2)
-        assert val['x'] == 8
-        assert val['y'] == -2
+        data = {'x': 5, 'y': 3}
+        nested.set(data, '[x]', value=8)
+        assert data['x'] == 8
+        nested.set(data, '[y]', value=-2)
+        assert data['x'] == 8
+        assert data['y'] == -2
 
-        val = {'x': {'y': 6}}
-        nested.set(val, '[x]', {'z': 13})
-        assert val['x'] == {'z': 13}
-        nested.set(val, '[x][z]', 2)
-        assert val['x']['z'] == 2
-
-    def test_02_mapping_validation(self):
-        val = {'x': {'y': 6}}
-        self.check_mapping_validation(val, nested.set, 9)
+        data = {'x': {'y': 6}}
+        nested.set(data, '[x]', value={'z': 13})
+        assert data['x'] == {'z': 13}
+        nested.set(data, '[x][z]', value=2)
+        assert data['x']['z'] == 2
 
     def test_01_sequence(self):
-        val = [5]
-        nested.set(val, '#0', 8)
-        assert val[0] == 8
+        data = [5]
+        nested.set(data, '#0', value=8)
+        assert data[0] == 8
 
-        val = [5, 3]
-        nested.set(val, '#0', 8)
-        assert val[0] == 8
-        nested.set(val, '#1', -2)
-        assert val[0] == 8
-        assert val[1] == -2
+        data = [5, 3]
+        nested.set(data, '#0', value=8)
+        assert data[0] == 8
+        nested.set(data, '#1', value=-2)
+        assert data[0] == 8
+        assert data[1] == -2
 
-        val = [5, 3, [9]]
-        nested.set(val, '#2', [12])
-        assert val[2] == [12]
-        nested.set(val, '#2#0', 7)
-        assert val[2][0] == 7
+        data = [5, 3, [9]]
+        nested.set(data, '#2', value=[12])
+        assert data[2] == [12]
+        nested.set(data, '#2#0', value=7)
+        assert data[2][0] == 7
 
-#    def test_02_sequence_validation(self):
-#        val = [5, 3, [9]]
-#        with pytest.raises(nested.MissingValueChar):
-#            nested.get(val, '#')
-#        with pytest.raises(nested.MissingValueChar):
-#            nested.get(val, '#2#')
-#        with pytest.raises(IndexError):
-#            nested.get(val, '#2#1')
-#
-#    def test_01_object(self):
-#        val = Object(x=5)
-#        assert nested.get(val, '.x') == 5
-#        val = Object(x=5, y=3)
-#        assert nested.get(val, '.x') == 5
-#        assert nested.get(val, '.y') == 3
-#        val = Object(x=5, y=3, z=Object(a=9))
-#        assert nested.get(val, '.z') == Object(a=9)
-#        assert nested.get(val, '.z.a') == 9
-#
-#    def test_02_object_validation(self):
-#        val = Object(x=5, y=3, z=Object(a=9))
-#        with pytest.raises(nested.MissingValueChar):
-#            nested.get(val, '.')
-#        with pytest.raises(nested.MissingValueChar):
-#            nested.get(val, '.z.')
-#        with pytest.raises(AttributeError):
-#            nested.get(val, '.z.b')
-#
+    def test_01_object(self):
+        data = Object(x=5)
+        nested.set(data, '.x', 8)
+        assert data.x == 8
+
+        data = Object(x=5, y=3)
+        nested.set(data, '.x', 8)
+        assert data.x == 8
+        nested.set(data, '.y', -2)
+        assert data.x == 8
+        assert data.y == -2
+
+        data = Object(x=5, y=3, z=Object(a=9))
+        nested.set(data, '.z', Object(a=12))
+        assert data.z == Object(a=12)
+        nested.set(data, '.z.a', 7)
+        assert data.z.a == 7
+
+    def test_02_mapping_validation(self):
+        data = {'x': {'y': 6}}
+        self.check_mapping_validation(data, nested.set, value=9)
+
+    def test_02_sequence_validation(self):
+        data = [5, 3, [9]]
+        self.check_sequence_validation(data, nested.set, value=12)
+
+    def test_02_object_validation(self):
+        data = Object(x=5, y=3, z=Object(a=9))
+        self.check_object_validation(data, nested.set, 12)
+
 #    @staticmethod
 #    def _make_mixed_mapping():
 #        return {'x':
