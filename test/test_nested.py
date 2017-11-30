@@ -289,10 +289,17 @@ class TestSet(Common):
 
     def test_03_object_mixed(self):
         data = self._make_mixed_object()
-        assert nested.get(data, '.x.y[z]') == 5
-        assert nested.get(data, '.x.y[a]#0') == -2
-        assert nested.get(data, '.x.y[a]#1') == {'b': 9}
-        assert nested.get(data, '.x.y[a]#1[b]') == 9
+        nested.set(data, '.x.y[z]', value=9)
+        assert data.x.y['z'] == 9
+        nested.set(data, '.x.y[a]#0', value=4.3)
+        assert data.x.y['z'] == 9
+        assert data.x.y['a'][0] == 4.3
+        nested.set(data, '.x.y[a]#1', value={'c': 12})
+        assert data.x.y['z'] == 9
+        assert data.x.y['a'][1] == {'c': 12}
+        nested.set(data, '.x.y[a]#1[c]', value=3)
+        assert data.x.y['z'] == 9
+        assert data.x.y['a'][1]['c'] == 3
 
     def test_04_mapping_mixed_validation(self):
         data = self._make_mixed_mapping()
@@ -402,47 +409,56 @@ class TestUpdate(Common):
         self.check_object_validation(data, nested.update,
                                      transform=self.REPR_NODE)
 
-#    def test_03_mapping_mixed(self):
-#        data = self._make_mixed_mapping()
-#        nested.set(data, '[x]#0', value=8)
-#        assert data['x'][0] == 8
-#
-#        nested.set(data, '[x]#1#0.y', value={'z': 12})
-#        assert data['x'][0] == 8
-#        assert data['x'][1][0].y == {'z': 12}
-#
-#        nested.set(data, '[x]#1#0.y[z]', value=-3)
-#        assert data['x'][0] == 8
-#        assert data['x'][1][0].y['z'] == -3
-#
-#    def test_03_sequence_mixed(self):
-#        data = self._make_mixed_sequence()
-#        nested.set(data, '#0', value=False)
-#        assert data[0] is False
-#
-#        nested.set(data, '#1[x][y]', value=Object(z=[12]))
-#        assert data[0] is False
-#        assert data[1]['x']['y'] == Object(z=[12])
-#
-#        nested.set(data, '#1[x][y].z#0', value=-3)
-#        assert data[0] is False
-#        assert data[1]['x']['y'].z[0] == -3
-#
-#    def test_03_object_mixed(self):
-#        data = self._make_mixed_object()
-#        assert nested.get(data, '.x.y[z]') == 5
-#        assert nested.get(data, '.x.y[a]#0') == -2
-#        assert nested.get(data, '.x.y[a]#1') == {'b': 9}
-#        assert nested.get(data, '.x.y[a]#1[b]') == 9
-#
-#    def test_04_mapping_mixed_validation(self):
-#        data = self._make_mixed_mapping()
-#        self.check_mapping_mixed_validation(data, nested.set, value=18)
-#
-#    def test_04_sequence_mixed_validation(self):
-#        data = self._make_mixed_sequence()
-#        self.check_sequence_mixed_validation(data, nested.set, value=18)
-#
-#    def test_04_object_mixed_validation(self):
-#        data = self._make_mixed_object()
-#        self.check_object_mixed_validation(data, nested.set, value=18)
+    def test_03_mapping_mixed(self):
+        data = self._make_mixed_mapping()
+        nested.update(data, '[x]#0', transform=self.MK_ADD(3))
+        assert data['x'][0] == 8
+
+        nested.update(data, '[x]#1#0.y', transform=self.CONST({'z': 12}))
+        assert data['x'][0] == 8
+        assert data['x'][1][0].y == {'z': 12}
+
+        nested.update(data, '[x]#1#0.y[z]', transform=self.REPR_NODE)
+        assert data['x'][0] == 8
+        assert data['x'][1][0].y['z'] == 'dict-z-12'
+
+    def test_03_sequence_mixed(self):
+        data = self._make_mixed_sequence()
+        nested.update(data, '#0', transform=lambda node: not node.value)
+        assert data[0] is False
+
+        nested.update(data, '#1[x][y]', transform=self.CONST(Object(z=[12])))
+        assert data[0] is False
+        assert data[1]['x']['y'] == Object(z=[12])
+
+        nested.update(data, '#1[x][y].z#0', transform=self.REPR_NODE)
+        assert data[0] is False
+        assert data[1]['x']['y'].z[0] == 'list-0-12'
+
+    def test_03_object_mixed(self):
+        data = self._make_mixed_object()
+        nested.update(data, '.x.y[z]', transform=self.MK_ADD(4))
+        assert data.x.y['z'] == 9
+        nested.update(data, '.x.y[a]#0', transform=self.CONST(4.3))
+        assert data.x.y['z'] == 9
+        assert data.x.y['a'][0] == 4.3
+        nested.update(data, '.x.y[a]#1', transform=self.CONST({'c': 12}))
+        assert data.x.y['z'] == 9
+        assert data.x.y['a'][0] == 4.3
+        assert data.x.y['a'][1] == {'c': 12}
+        nested.update(data, '.x.y[a]#1[c]', transform=self.REPR_NODE)
+        assert data.x.y['z'] == 9
+        assert data.x.y['a'][0] == 4.3
+        assert data.x.y['a'][1]['c'] == 'dict-c-12'
+
+    def test_04_mapping_mixed_validation(self):
+        data = self._make_mixed_mapping()
+        self.check_mapping_mixed_validation(data, nested.update, transform=18)
+
+    def test_04_sequence_mixed_validation(self):
+        data = self._make_mixed_sequence()
+        self.check_sequence_mixed_validation(data, nested.update, transform=18)
+
+    def test_04_object_mixed_validation(self):
+        data = self._make_mixed_object()
+        self.check_object_mixed_validation(data, nested.update, transform=18)
