@@ -98,13 +98,60 @@ OP_CHARS = [
 
 
 def get(data, path):
-    """Fetch an arbitrarily nested value from the given data structure."""
+    """Fetch the value of an arbitrarily nested property.
+
+    Args:
+        data: Compound data structure to traverse.
+            It must support attribute access (`__getattribute__`) or item
+            access (`__getitem__`).
+        path (str): Path to the target property in ``data``.
+        value: The value to write to the target property.
+
+    Returns:
+        The value of the target property.
+    """
     return get_with_context(data, path).value
 
 
 def set(data, path, value):
-    """Set an arbitrarily nested value in the given data structure."""
+    """Set the value of an arbitrarily nested property.
+
+    Args:
+        data: Compound data structure to traverse.
+            Must be mutable. Must support attribute access (`__getattribute__`)
+            or item access (`__getitem__`).
+        path (str): Path to the target property in ``data``.
+        value: The value to write to the target property.
+
+    Returns:
+        The modified ``data`` object. Since this function mutates ``data``, the
+        return value is not meaningful and is simply a convenience to allow
+        method chaining.
+    """
     node = get_with_context(data, path)
+    put(node.parent, node.action, value)
+    return data
+
+
+def update(data, path, transform):
+    """Transform the value of an arbitrarily nested property.
+
+    Args:
+        data: Compound data structure to traverse.
+            Must be mutable. Must support attribute access (`__getattribute__`)
+            or item access (`__getitem__`).
+        path (str): Path to the target value in ``data``.
+        transform (callable): Callable that transforms the target value.
+            It should take a ``DataNode`` instance as its sole argument. Its
+            return value will replace the target value in ``data``.
+
+    Returns:
+        The modified ``data`` object. Since this function mutates ``data``, the
+        return value is not meaningful and is simply a convenience to allow
+        method chaining.
+    """
+    node = get_with_context(data, path)
+    value = transform(node)
     put(node.parent, node.action, value)
     return data
 
@@ -230,15 +277,15 @@ class MissingLHSOperator(Error):
             f" but found '{char}' (must be one of: {self.lhs_ops_repr})")
 
 
+class UnexpectedRHSOperator(Error):
+
+    def __init__(self, char):
+        super().__init__(f"unexpected rhs operator `{char}`")
+
+
 class MissingValueChar(Error):
 
     def __init__(self, op):
         op_char = [char for char, operator in LHS_OPS.items()
                    if op is operator][0]
         super().__init__(f"missing value after lhs operator `{op_char}`")
-
-
-class UnexpectedRHSOperator(Error):
-
-    def __init__(self, char):
-        super().__init__(f"unexpected rhs operator `{char}`")
