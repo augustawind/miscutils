@@ -360,18 +360,21 @@ class TestUpdate(Common):
         nested.update(data, '.z.a', transform=self.REPR_NODE)
         assert data.z.a == 'SimpleNamespace-a-12'
 
-#    def test_02_mapping_validation(self):
-#        data = {'x': {'y': 6}}
-#        self.check_mapping_validation(data, nested.set, value=9)
-#
-#    def test_02_sequence_validation(self):
-#        data = [5, 3, [9]]
-#        self.check_sequence_validation(data, nested.set, value=12)
-#
-#    def test_02_object_validation(self):
-#        data = Object(x=5, y=3, z=Object(a=9))
-#        self.check_object_validation(data, nested.set, value=12)
-#
+    def test_02_mapping_validation(self):
+        data = {'x': {'y': 6}}
+        self.check_mapping_validation(data, nested.update,
+                                      transform=self.REPR_NODE)
+
+    def test_02_sequence_validation(self):
+        data = [5, 3, [9]]
+        self.check_sequence_validation(data, nested.update,
+                                       transform=self.REPR_NODE)
+
+    def test_02_object_validation(self):
+        data = Object(x=5, y=3, z=Object(a=9))
+        self.check_object_validation(data, nested.update,
+                                     transform=self.REPR_NODE)
+
 #    def test_03_mapping_mixed(self):
 #        data = self._make_mixed_mapping()
 #        nested.set(data, '[x]#0', value=8)
