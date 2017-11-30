@@ -60,13 +60,27 @@ None
 """
 from collections import OrderedDict, namedtuple
 from enum import Enum
+from operator import getitem, setitem
 
-__all__ = ['get', 'MissingRHSOperator', 'MissingLHSOperator',
+__all__ = ['get', 'set', 'MissingRHSOperator', 'MissingLHSOperator',
           'MissingValueChar', 'UnexpectedRHSOperator']
+
+DataNode = namedtuple('DataNode', 'value action parent')
 
 Action = namedtuple('Action', 'item accessor')
 
 Accessor = Enum('Accessor', 'ATTR KEY INDEX')
+
+ACCESSOR_GETTERS = {
+    Accessor.ATTR: getattr,
+    Accessor.KEY: getitem,
+    Accessor.INDEX: getitem,
+}
+ACCESSOR_SETTERS = {
+    Accessor.ATTR: setattr,
+    Accessor.KEY: setitem,
+    Accessor.INDEX: setitem,
+}
 
 LHS_OPS = OrderedDict((
     ('.', Accessor.ATTR),
@@ -76,46 +90,59 @@ LHS_OPS = OrderedDict((
 RHS_OPS = OrderedDict((
     (Accessor.KEY, ']'),
 ))
+
 OP_CHARS = [
     *LHS_OPS.keys(),
     *RHS_OPS.values(),
 ]
 
 
-class Error(Exception):
-    """Base class for errors in this module."""
+def get(data, path):
+    """Fetch an arbitrarily nested value from the given data structure."""
+    return get_with_context(data, path).value
 
 
-class MissingRHSOperator(Error):
-
-    def __init__(self, op, char):
-        super().__init__(
-            f"missing rhs operator: accessor started with char '{char}':"
-            f" expected rhs op char '{RHS_OPS[op]}'")
-
-
-class MissingLHSOperator(Error):
-
-    lhs_ops_repr = ' , '.join(f"'{char}'" for char in LHS_OPS.keys())
-
-    def __init__(self, char):
-        super().__init__(
-            f"missing lhs operator: expected an lhs operator char"
-            f" but found '{char}' (must be one of: {self.lhs_ops_repr})")
+def set(data, path, value):
+    """Set an arbitrarily nested value in the given data structure."""
+    node = get_with_context(data, path)
+    put(node.parent, node.action, value)
+    return data
 
 
-class MissingValueChar(Error):
+def get_with_context(data, path):
+    actions = parse_actions(path)
+    for action in actions:
+        parent = data
+        data = pick(data, action)
+    return DataNode(
+        value=data,
+        action=action,
+        parent=parent,
+    )
 
-    def __init__(self, op):
-        op_char = [char for char, operator in LHS_OPS.items()
-                   if op is operator][0]
-        super().__init__(f"missing value after lhs operator `{op_char}`")
+
+def pick(data, action):
+    if action.accessor is Accessor.ATTR:
+        return getattr(data, action.item)
+    elif action.accessor is Accessor.KEY:
+        return data[action.item]
+    elif action.accessor is Accessor.INDEX:
+        return data[int(action.item)]
+    else:
+        raise ValueError("PROGRAM ERROR: unexpected accessor"
+                         f" `{action.accessor}`")
 
 
-class UnexpectedRHSOperator(Error):
-
-    def __init__(self, char):
-        super().__init__(f"unexpected rhs operator `{char}`")
+def put(data, action, value):
+    if action.accessor is Accessor.ATTR:
+        setattr(data, action.item, value)
+    elif action.accessor is Accessor.KEY:
+        data[action.item] = value
+    elif action.accessor is Accessor.INDEX:
+        data[int(action.item)] = value
+    else:
+        raise ValueError("PROGRAM ERROR: unexpected accessor"
+                         f" `{action.accessor}`")
 
 
 def parse_actions(path):
@@ -181,52 +208,37 @@ def parse_actions(path):
     return actions
 
 
-
-def _pick(data, action):
-    if action.accessor is Accessor.ATTR:
-        return getattr(data, action.item)
-    elif action.accessor is Accessor.KEY:
-        return data[action.item]
-    elif action.accessor is Accessor.INDEX:
-        return data[int(action.item)]
-    else:
-        raise ValueError("PROGRAM ERROR: unexpected accessor"
-                         f" `{action.accessor}`")
+class Error(Exception):
+    """Base class for errors in this module."""
 
 
-def _put(data, action, value):
-    if action.accessor is Accessor.ATTR:
-        setattr(data, action.item, value)
-    elif action.accessor is Accessor.KEY:
-        data[action.item] = value
-    elif action.accessor is Accessor.INDEX:
-        data[int(action.item)] = value
-    else:
-        raise ValueError("PROGRAM ERROR: unexpected accessor"
-                         f" `{action.accessor}`")
+class MissingRHSOperator(Error):
+
+    def __init__(self, op, char):
+        super().__init__(
+            f"missing rhs operator: accessor started with char '{char}':"
+            f" expected rhs op char '{RHS_OPS[op]}'")
 
 
-ContextualData = namedtuple('ContextualData', 'value action parent')
+class MissingLHSOperator(Error):
+
+    lhs_ops_repr = ' , '.join(f"'{char}'" for char in LHS_OPS.keys())
+
+    def __init__(self, char):
+        super().__init__(
+            f"missing lhs operator: expected an lhs operator char"
+            f" but found '{char}' (must be one of: {self.lhs_ops_repr})")
 
 
-def get_with_context(data, path):
-    actions = parse_actions(path)
-    for action in actions:
-        parent = data
-        data = _pick(data, action)
-    return ContextualData(
-        value=data,
-        action=action,
-        parent=parent,
-    )
+class MissingValueChar(Error):
+
+    def __init__(self, op):
+        op_char = [char for char, operator in LHS_OPS.items()
+                   if op is operator][0]
+        super().__init__(f"missing value after lhs operator `{op_char}`")
 
 
-def get(data, path):
-    """Fetch an arbitrarily nested property from the given data structure."""
-    return get_with_context(data, path).value
+class UnexpectedRHSOperator(Error):
 
-
-def set(data, path, value):
-    node = get_with_context(data, path)
-    _put(node.parent, node.action, value)
-    return data
+    def __init__(self, char):
+        super().__init__(f"unexpected rhs operator `{char}`")
