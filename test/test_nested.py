@@ -21,15 +21,15 @@ class TestGet:
         val = {'x': {'y': 6}}
         with pytest.raises(nested.MissingValueChar):
             nested.get(val, '[')
-        with pytest.raises(nested.MissingOpenOperator):
+        with pytest.raises(nested.MissingLHSOperator):
             nested.get(val, 'x')
-        with pytest.raises(nested.MissingOpenOperator):
+        with pytest.raises(nested.MissingLHSOperator):
             nested.get(val, '[x]y')
-        with pytest.raises(nested.MissingCloseOperator):
+        with pytest.raises(nested.MissingRHSOperator):
             nested.get(val, '[x')
-        with pytest.raises(nested.MissingCloseOperator):
+        with pytest.raises(nested.MissingRHSOperator):
             nested.get(val, '[x][y')
-        with pytest.raises(nested.MissingCloseOperator):
+        with pytest.raises(nested.MissingRHSOperator):
             nested.get(val, '[x[y]')
         with pytest.raises(KeyError):
             nested.get(val, '[x][z]')
@@ -94,11 +94,11 @@ class TestGet:
             nested.get(val, '[x]#1#0.')
         with pytest.raises(nested.MissingValueChar):
             nested.get(val, '[x]#1#0.y[')
-        with pytest.raises(nested.MissingOpenOperator):
+        with pytest.raises(nested.MissingLHSOperator):
             nested.get(val, '[x]1')
-        with pytest.raises(nested.MissingCloseOperator):
+        with pytest.raises(nested.MissingRHSOperator):
             nested.get(val, '[x]#1#0.y[z')
-        with pytest.raises(nested.UnexpectedCloseOperator):
+        with pytest.raises(nested.UnexpectedRHSOperator):
             nested.get(val, '[x]#1#0.yz]')
 
     @staticmethod

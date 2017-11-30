@@ -21,8 +21,8 @@ Path DSL
 The syntax of the path DSL is:
 
 ```python
-path            ::=  operation [operation [operation ...]]
-operation       ::=  lhs_operator parameter [rhs_operator]
+path            ::=  accessor [accessor [accessor ...]]
+accessor        ::=  lhs_operator parameter [rhs_operator]
 lhs_operator    ::=  "." | "[" | "#"
 rhs_operator    ::=  "]"
 parameter       ::=  string
@@ -36,7 +36,7 @@ instructions are exhausted. The first instruction is executed on the object
 passed to the function, the second is executed on the result of that
 instruction, and so on, returning the final value.
 
-The available operations are:
+The available accessors are:
 
 ============  =============================  =========  ===============
 Name          Syntax                         Parameter  Python executed
@@ -62,19 +62,19 @@ None
 from collections import OrderedDict, namedtuple
 from enum import Enum
 
-__all__ = ['get', 'MissingCloseOperator', 'MissingOpenOperator',
-          'MissingValueChar', 'UnexpectedCloseOperator']
+__all__ = ['get', 'MissingRHSOperator', 'MissingLHSOperator',
+          'MissingValueChar', 'UnexpectedRHSOperator']
 
-Operation = Enum('Operation', 'ATTR KEY INDEX')
-Instruction = namedtuple('Instruction', 'item operation')
+Accessor = Enum('Accessor', 'ATTR KEY INDEX')
+Instruction = namedtuple('Instruction', 'item accessor')
 
 LHS_OPS = OrderedDict((
-    ('.', Operation.ATTR),
-    ('[', Operation.KEY),
-    ('#', Operation.INDEX),
+    ('.', Accessor.ATTR),
+    ('[', Accessor.KEY),
+    ('#', Accessor.INDEX),
 ))
 RHS_OPS = OrderedDict((
-    (Operation.KEY, ']'),
+    (Accessor.KEY, ']'),
 ))
 OP_CHARS = [
     *LHS_OPS.keys(),
@@ -86,15 +86,15 @@ class Error(Exception):
     """Base class for errors in this module."""
 
 
-class MissingCloseOperator(Error):
+class MissingRHSOperator(Error):
 
     def __init__(self, op, char):
         super().__init__(
-            f"missing rhs operator: operation started with char '{char}':"
+            f"missing rhs operator: accessor started with char '{char}':"
             f" expected rhs op char '{RHS_OPS[op]}'")
 
 
-class MissingOpenOperator(Error):
+class MissingLHSOperator(Error):
 
     lhs_ops_repr = ' , '.join(f"'{char}'" for char in LHS_OPS.keys())
 
@@ -112,7 +112,7 @@ class MissingValueChar(Error):
         super().__init__(f"missing value after lhs operator `{op_char}`")
 
 
-class UnexpectedCloseOperator(Error):
+class UnexpectedRHSOperator(Error):
 
     def __init__(self, char):
         super().__init__(f"unexpected rhs operator `{char}`")
@@ -121,19 +121,19 @@ class UnexpectedCloseOperator(Error):
 def parse_instructions(path):
     """Attempt to parse a string into instructions for modifying an object."""
     instructions = []
-    operation = None
+    accessor = None
     item = ''
 
     for char in path:
         # Grab the operator if this char is an lhs operator char
         lhs_op = LHS_OPS.get(char)
 
-        if operation is None:
-            # If no current operation, assert that char is an lhs operator
+        if accessor is None:
+            # If no current accessor, assert that char is an lhs operator
             if not lhs_op:
-                raise MissingOpenOperator(char)
+                raise MissingLHSOperator(char)
             # Assign the new operator
-            operation = lhs_op
+            accessor = lhs_op
         else:
             # If char is not an operator char, append it to current value
             if char not in OP_CHARS:
@@ -141,42 +141,42 @@ def parse_instructions(path):
                 continue
 
             # Otherwise, translate current op into instruction
-            instructions.append(Instruction(item, operation))
+            instructions.append(Instruction(item, accessor))
             item = ''
 
             # If the current op expects a rhs op char...
-            rhs_op_char = RHS_OPS.get(operation)
+            rhs_op_char = RHS_OPS.get(accessor)
             if rhs_op_char:
                 # ...raise error if the current char is an lhs op char
                 if lhs_op:
-                    raise MissingCloseOperator(operation, char)
+                    raise MissingRHSOperator(accessor, char)
                 # ...clear current op if current char is the rhs op char
                 if char == rhs_op_char:
-                    operation = None
+                    accessor = None
                 continue
 
             # Else if the current op has no rhs op char...
             if lhs_op:
-                # ...if current char is an lhs op char, start new operation
-                operation = lhs_op
+                # ...if current char is an lhs op char, start new accessor
+                accessor = lhs_op
             else:
                 # ...otherwise it's a misplaced rhs op char, so raise error
-                raise UnexpectedCloseOperator(char)
+                raise UnexpectedRHSOperator(char)
 
-    # Process final operation if it had no rhs op char
-    if operation is not None:
+    # Process final accessor if it had no rhs op char
+    if accessor is not None:
         # Raise an error if no value was present
         if not item:
-            raise MissingValueChar(operation)
+            raise MissingValueChar(accessor)
 
         # Raise an error if op expects a rhs op char
-        if operation in RHS_OPS:
+        if accessor in RHS_OPS:
             for char, op in LHS_OPS.items():
-                if op is operation:
-                    raise MissingCloseOperator(operation, char)
+                if op is accessor:
+                    raise MissingRHSOperator(accessor, char)
 
-        # Translate final operation into instruction
-        instructions.append(Instruction(item, operation))
+        # Translate final accessor into instruction
+        instructions.append(Instruction(item, accessor))
 
     return instructions
 
@@ -185,13 +185,13 @@ def get(value, path):
     """Fetch an arbitrarily nested value from the given object."""
     instructions = parse_instructions(path)
     for instruction in instructions:
-        if instruction.operation is Operation.ATTR:
+        if instruction.accessor is Accessor.ATTR:
             value = getattr(value, instruction.item)
-        elif instruction.operation is Operation.KEY:
+        elif instruction.accessor is Accessor.KEY:
             value = value[instruction.item]
-        elif instruction.operation is Operation.INDEX:
+        elif instruction.accessor is Accessor.INDEX:
             value = value[int(instruction.item)]
         else:
-            raise ValueError("PROGRAM ERROR: unexpected operation"
-                             f" `{instruction.operation}`")
+            raise ValueError("PROGRAM ERROR: unexpected accessor"
+                             f" `{instruction.accessor}`")
     return value
