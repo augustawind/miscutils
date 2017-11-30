@@ -287,73 +287,79 @@ class TestSet(Common):
 class TestUpdate(Common):
 
     @staticmethod
-    def mk_add(x):
-        def adder(node):
+    def MK_ADD(x):
+        def transform(node):
             return node.value + x
-        return adder
+        return transform
 
     @staticmethod
-    def repr_node(node):
+    def REPR_NODE(node):
         return '{!s}-{!s}-{!s}'.format(
             type(node.parent).__name__,
             node.action.item,
             node.value,
         )
 
+    @staticmethod
+    def CONST(value):
+        def transform(_):
+            return value
+        return transform
+
     def test_01_mapping(self):
         data = {'x': 5}
-        nested.update(data, '[x]', transform=self.mk_add(3))
+        nested.update(data, '[x]', transform=self.MK_ADD(3))
         assert data['x'] == 8
 
         data = {'x': 5, 'y': 3}
-        nested.update(data, '[x]', transform=self.mk_add(3))
+        nested.update(data, '[x]', transform=self.MK_ADD(3))
         assert data['x'] == 8
-        nested.update(data, '[y]', transform=self.repr_node)
+        nested.update(data, '[y]', transform=self.REPR_NODE)
         assert data['x'] == 8
         assert data['y'] == 'dict-y-3'
 
         data = {'x': {'y': 6}}
-        nested.update(data, '[x]', transform=lambda _: {'z': 13})
+        nested.update(data, '[x]', transform=self.CONST({'z': 13}))
         assert data['x'] == {'z': 13}
-        nested.update(data, '[x][z]', transform=self.mk_add(-11))
+        nested.update(data, '[x][z]', transform=self.MK_ADD(-11))
         assert data['x']['z'] == 2
 
-#    def test_01_sequence(self):
-#        data = [5]
-#        nested.set(data, '#0', value=8)
-#        assert data[0] == 8
-#
-#        data = [5, 3]
-#        nested.set(data, '#0', value=8)
-#        assert data[0] == 8
-#        nested.set(data, '#1', value=-2)
-#        assert data[0] == 8
-#        assert data[1] == -2
-#
-#        data = [5, 3, [9]]
-#        nested.set(data, '#2', value=[12])
-#        assert data[2] == [12]
-#        nested.set(data, '#2#0', value=7)
-#        assert data[2][0] == 7
-#
-#    def test_01_object(self):
-#        data = Object(x=5)
-#        nested.set(data, '.x', value=8)
-#        assert data.x == 8
-#
-#        data = Object(x=5, y=3)
-#        nested.set(data, '.x', value=8)
-#        assert data.x == 8
-#        nested.set(data, '.y', value=-2)
-#        assert data.x == 8
-#        assert data.y == -2
-#
-#        data = Object(x=5, y=3, z=Object(a=9))
-#        nested.set(data, '.z', value=Object(a=12))
-#        assert data.z == Object(a=12)
-#        nested.set(data, '.z.a', value=7)
-#        assert data.z.a == 7
-#
+    def test_01_sequence(self):
+        data = [5]
+        nested.update(data, '#0', transform=self.MK_ADD(3))
+        assert data[0] == 8
+
+        data = [5, 3]
+        nested.update(data, '#0', transform=self.MK_ADD(3))
+        assert data[0] == 8
+        nested.update(data, '#1', transform=self.REPR_NODE)
+        assert data[0] == 8
+        assert data[1] == 'list-1-3'
+
+        data = [5, 3, [9]]
+        nested.update(data, '#2', transform=self.CONST([12]))
+        assert data[2] == [12]
+        nested.update(data, '#2#0', self.REPR_NODE)
+        assert data[2][0] == 'list-0-12'
+
+    def test_01_object(self):
+        data = Object(x=5)
+        nested.update(data, '.x', transform=self.MK_ADD(3))
+        assert data.x == 8
+
+        data = Object(x=5, y=3)
+        nested.update(data, '.x', transform=self.MK_ADD(3))
+        assert data.x == 8
+        nested.update(data, '.y', transform=self.REPR_NODE)
+        assert data.x == 8
+        assert data.y == 'SimpleNamespace-y-3'
+
+        data = Object(x=5, y=3, z=Object(a=9))
+        nested.update(data, '.z', transform=self.CONST(Object(a=12)))
+        assert data.z == Object(a=12)
+        nested.update(data, '.z.a', transform=self.REPR_NODE)
+        assert data.z.a == 'SimpleNamespace-a-12'
+
 #    def test_02_mapping_validation(self):
 #        data = {'x': {'y': 6}}
 #        self.check_mapping_validation(data, nested.set, value=9)
