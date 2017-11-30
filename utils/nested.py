@@ -1,4 +1,4 @@
-"""nested - tools for fetching and modifying deeply nested data
+"""nested - tools for working with arbitrarily nested data structures
 
 This module exports three functions and some accompanying Exception classes.
 It's overall purpose is to facillitate working with deeply nested attributes
@@ -62,8 +62,8 @@ from collections import OrderedDict, namedtuple
 from enum import Enum
 from operator import getitem, setitem
 
-__all__ = ['get', 'set', 'MissingRHSOperator', 'MissingLHSOperator',
-          'MissingValueChar', 'UnexpectedRHSOperator']
+__all__ = ['get', 'set', 'update', 'DataNode', 'MissingRHSOperator',
+           'MissingLHSOperator', 'UnexpectedRHSOperator', 'MissingValueChar']
 
 DataNode = namedtuple('DataNode', 'value action parent')
 
