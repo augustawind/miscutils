@@ -1,4 +1,4 @@
-"""nested - tools for fetching and modifying deeply nested attributes
+"""nested - tools for fetching and modifying deeply nested data
 
 This module exports three functions and some accompanying Exception classes.
 It's overall purpose is to facillitate working with deeply nested attributes
@@ -30,11 +30,10 @@ parameter       ::=  string
 
 A ``path`` is just a sequence of alternating operators and parameters, where
 each operator describe how to access each parameter. These pairs form a
-sequence of instructions. When you call a function in this module, each
-instruction is executed on the result of the previous instruction until the
-instructions are exhausted. The first instruction is executed on the object
-passed to the function, the second is executed on the result of that
-instruction, and so on, returning the final value.
+sequence of actions. When you call a function in this module, each action is
+executed on the result of the previous action until the actions are exhausted.
+The first action is executed on the object passed to the function, the second
+is executed on the result of that action, and so on, returning the final value.
 
 The available accessors are:
 
@@ -65,8 +64,9 @@ from enum import Enum
 __all__ = ['get', 'MissingRHSOperator', 'MissingLHSOperator',
           'MissingValueChar', 'UnexpectedRHSOperator']
 
+Action = namedtuple('Action', 'item accessor')
+
 Accessor = Enum('Accessor', 'ATTR KEY INDEX')
-Instruction = namedtuple('Instruction', 'item accessor')
 
 LHS_OPS = OrderedDict((
     ('.', Accessor.ATTR),
@@ -118,9 +118,9 @@ class UnexpectedRHSOperator(Error):
         super().__init__(f"unexpected rhs operator `{char}`")
 
 
-def parse_instructions(path):
-    """Attempt to parse a string into instructions for modifying an object."""
-    instructions = []
+def parse_actions(path):
+    """Attempt to parse a string into actions for modifying an object."""
+    actions = []
     accessor = None
     item = ''
 
@@ -140,8 +140,8 @@ def parse_instructions(path):
                 item += char
                 continue
 
-            # Otherwise, translate current op into instruction
-            instructions.append(Instruction(item, accessor))
+            # Otherwise, translate current op into action
+            actions.append(Action(item, accessor))
             item = ''
 
             # If the current op expects a rhs op char...
@@ -175,23 +175,58 @@ def parse_instructions(path):
                 if op is accessor:
                     raise MissingRHSOperator(accessor, char)
 
-        # Translate final accessor into instruction
-        instructions.append(Instruction(item, accessor))
+        # Translate final accessor into action
+        actions.append(Action(item, accessor))
 
-    return instructions
+    return actions
 
 
-def get(value, path):
-    """Fetch an arbitrarily nested value from the given object."""
-    instructions = parse_instructions(path)
-    for instruction in instructions:
-        if instruction.accessor is Accessor.ATTR:
-            value = getattr(value, instruction.item)
-        elif instruction.accessor is Accessor.KEY:
-            value = value[instruction.item]
-        elif instruction.accessor is Accessor.INDEX:
-            value = value[int(instruction.item)]
-        else:
-            raise ValueError("PROGRAM ERROR: unexpected accessor"
-                             f" `{instruction.accessor}`")
-    return value
+
+def _pick(data, action):
+    if action.accessor is Accessor.ATTR:
+        return getattr(data, action.item)
+    elif action.accessor is Accessor.KEY:
+        return data[action.item]
+    elif action.accessor is Accessor.INDEX:
+        return data[int(action.item)]
+    else:
+        raise ValueError("PROGRAM ERROR: unexpected accessor"
+                         f" `{action.accessor}`")
+
+
+def _put(data, action, value):
+    if action.accessor is Accessor.ATTR:
+        setattr(data, action.item, value)
+    elif action.accessor is Accessor.KEY:
+        data[action.item] = value
+    elif action.accessor is Accessor.INDEX:
+        data[int(action.item)] = value
+    else:
+        raise ValueError("PROGRAM ERROR: unexpected accessor"
+                         f" `{action.accessor}`")
+
+
+ContextualData = namedtuple('ContextualData', 'value action parent')
+
+
+def get_with_context(data, path):
+    actions = parse_actions(path)
+    for action in actions:
+        parent = data
+        data = _pick(data, action)
+    return ContextualData(
+        value=data,
+        action=action,
+        parent=parent,
+    )
+
+
+def get(data, path):
+    """Fetch an arbitrarily nested property from the given data structure."""
+    return get_with_context(data, path).value
+
+
+def set(data, path, value):
+    node = get_with_context(data, path)
+    _put(node.parent, node.action, value)
+    return data
