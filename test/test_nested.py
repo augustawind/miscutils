@@ -282,3 +282,131 @@ class TestSet(Common):
     def test_04_object_mixed_validation(self):
         data = self._make_mixed_object()
         self.check_object_mixed_validation(data, nested.set, value=18)
+
+
+class TestUpdate(Common):
+
+    @staticmethod
+    def mk_add(x):
+        def adder(node):
+            return node.value + x
+        return adder
+
+    @staticmethod
+    def repr_node(node):
+        return '{!s}-{!s}-{!s}'.format(
+            type(node.parent).__name__,
+            node.action.item,
+            node.value,
+        )
+
+    def test_01_mapping(self):
+        data = {'x': 5}
+        nested.update(data, '[x]', transform=self.mk_add(3))
+        assert data['x'] == 8
+
+        data = {'x': 5, 'y': 3}
+        nested.update(data, '[x]', transform=self.mk_add(3))
+        assert data['x'] == 8
+        nested.update(data, '[y]', transform=self.repr_node)
+        assert data['x'] == 8
+        assert data['y'] == 'dict-y-3'
+
+        data = {'x': {'y': 6}}
+        nested.update(data, '[x]', transform=lambda _: {'z': 13})
+        assert data['x'] == {'z': 13}
+        nested.update(data, '[x][z]', transform=self.mk_add(-11))
+        assert data['x']['z'] == 2
+
+#    def test_01_sequence(self):
+#        data = [5]
+#        nested.set(data, '#0', value=8)
+#        assert data[0] == 8
+#
+#        data = [5, 3]
+#        nested.set(data, '#0', value=8)
+#        assert data[0] == 8
+#        nested.set(data, '#1', value=-2)
+#        assert data[0] == 8
+#        assert data[1] == -2
+#
+#        data = [5, 3, [9]]
+#        nested.set(data, '#2', value=[12])
+#        assert data[2] == [12]
+#        nested.set(data, '#2#0', value=7)
+#        assert data[2][0] == 7
+#
+#    def test_01_object(self):
+#        data = Object(x=5)
+#        nested.set(data, '.x', value=8)
+#        assert data.x == 8
+#
+#        data = Object(x=5, y=3)
+#        nested.set(data, '.x', value=8)
+#        assert data.x == 8
+#        nested.set(data, '.y', value=-2)
+#        assert data.x == 8
+#        assert data.y == -2
+#
+#        data = Object(x=5, y=3, z=Object(a=9))
+#        nested.set(data, '.z', value=Object(a=12))
+#        assert data.z == Object(a=12)
+#        nested.set(data, '.z.a', value=7)
+#        assert data.z.a == 7
+#
+#    def test_02_mapping_validation(self):
+#        data = {'x': {'y': 6}}
+#        self.check_mapping_validation(data, nested.set, value=9)
+#
+#    def test_02_sequence_validation(self):
+#        data = [5, 3, [9]]
+#        self.check_sequence_validation(data, nested.set, value=12)
+#
+#    def test_02_object_validation(self):
+#        data = Object(x=5, y=3, z=Object(a=9))
+#        self.check_object_validation(data, nested.set, value=12)
+#
+#    def test_03_mapping_mixed(self):
+#        data = self._make_mixed_mapping()
+#        nested.set(data, '[x]#0', value=8)
+#        assert data['x'][0] == 8
+#
+#        nested.set(data, '[x]#1#0.y', value={'z': 12})
+#        assert data['x'][0] == 8
+#        assert data['x'][1][0].y == {'z': 12}
+#
+#        nested.set(data, '[x]#1#0.y[z]', value=-3)
+#        assert data['x'][0] == 8
+#        assert data['x'][1][0].y['z'] == -3
+#
+#    def test_03_sequence_mixed(self):
+#        data = self._make_mixed_sequence()
+#        nested.set(data, '#0', value=False)
+#        assert data[0] is False
+#
+#        nested.set(data, '#1[x][y]', value=Object(z=[12]))
+#        assert data[0] is False
+#        assert data[1]['x']['y'] == Object(z=[12])
+#
+#        nested.set(data, '#1[x][y].z#0', value=-3)
+#        assert data[0] is False
+#        assert data[1]['x']['y'].z[0] == -3
+#
+#    def test_03_object_mixed(self):
+#        data = self._make_mixed_object()
+#        assert nested.get(data, '.x.y[z]') == 5
+#        assert nested.get(data, '.x.y[a]#0') == -2
+#        assert nested.get(data, '.x.y[a]#1') == {'b': 9}
+#        assert nested.get(data, '.x.y[a]#1[b]') == 9
+#
+#    def test_04_mapping_mixed_validation(self):
+#        data = self._make_mixed_mapping()
+#        self.check_mapping_mixed_validation(data, nested.set, value=18)
+#
+#    def test_04_sequence_mixed_validation(self):
+#        data = self._make_mixed_sequence()
+#        self.check_sequence_mixed_validation(data, nested.set, value=18)
+#
+#    def test_04_object_mixed_validation(self):
+#        data = self._make_mixed_object()
+#        self.check_object_mixed_validation(data, nested.set, value=18)
