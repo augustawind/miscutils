@@ -7,6 +7,23 @@ from utils import nested
 
 class Common:
 
+    def check_non_compound_types_validation(self, func, *args, **kwargs):
+        for data in (
+                5,
+                3.2,
+                True,
+                None,
+                ...,
+        ):
+            # Simple paths
+            for path in ('[x]', '#0', '.foo'):
+                with pytest.raises(Exception):
+                    func(data, path, *args, **kwargs)
+            # Complex paths
+            for path in ('[x]#y', '#0[foo]', '.foo.x[z]', '[a].b#3'):
+                with pytest.raises(Exception):
+                    func(data, path, *args, **kwargs)
+
     def check_mapping_validation(self, data, func, *args, **kwargs):
         with pytest.raises(nested.MissingValueChar):
             func(data, '[', *args, **kwargs)
@@ -126,6 +143,9 @@ class TestGet(Common):
         assert nested.get(data, '.z') == Object(a=9)
         assert nested.get(data, '.z.a') == 9
 
+    def test_02_non_compound_types_validation(self):
+        self.check_non_compound_types_validation(nested.get)
+
     def test_02_mapping_validation(self):
         data = {'x': {'y': 6}}
         self.check_mapping_validation(data, nested.get)
@@ -225,6 +245,9 @@ class TestSet(Common):
         assert data.z == Object(a=12)
         nested.set(data, '.z.a', value=7)
         assert data.z.a == 7
+
+    def test_02_non_compound_types_validation(self):
+        self.check_non_compound_types_validation(nested.set, value=9)
 
     def test_02_mapping_validation(self):
         data = {'x': {'y': 6}}
@@ -359,6 +382,10 @@ class TestUpdate(Common):
         assert data.z == Object(a=12)
         nested.update(data, '.z.a', transform=self.REPR_NODE)
         assert data.z.a == 'SimpleNamespace-a-12'
+
+    def test_02_non_compound_types_validation(self):
+        self.check_non_compound_types_validation(nested.update,
+                                                 transform=self.REPR_NODE)
 
     def test_02_mapping_validation(self):
         data = {'x': {'y': 6}}
