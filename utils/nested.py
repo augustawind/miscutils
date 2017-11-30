@@ -70,17 +70,17 @@ DataNode = namedtuple('DataNode', 'value action parent')
 Action = namedtuple('Action', 'item accessor')
 
 Accessor = Enum('Accessor', 'ATTR KEY INDEX')
-
-ACCESSOR_GETTERS = {
-    Accessor.ATTR: getattr,
-    Accessor.KEY: getitem,
-    Accessor.INDEX: getitem,
-}
-ACCESSOR_SETTERS = {
-    Accessor.ATTR: setattr,
-    Accessor.KEY: setitem,
-    Accessor.INDEX: setitem,
-}
+#
+#ACCESSOR_GETTERS = {
+#    Accessor.ATTR: getattr,
+#    Accessor.KEY: getitem,
+#    Accessor.INDEX: getitem,
+#}
+#ACCESSOR_SETTERS = {
+#    Accessor.ATTR: setattr,
+#    Accessor.KEY: setitem,
+#    Accessor.INDEX: setitem,
+#}
 
 LHS_OPS = OrderedDict((
     ('.', Accessor.ATTR),
