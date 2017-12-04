@@ -6,7 +6,6 @@ from utils import nested
 
 
 class Common:
-
     def check_non_compound_types_validation(self, func, *args, **kwargs):
         for data in (
                 5,
@@ -16,10 +15,12 @@ class Common:
                 ...,
         ):
             # Simple paths
+
             for path in ('[x]', '#0', '.foo'):
                 with pytest.raises(Exception):
                     func(data, path, *args, **kwargs)
             # Complex paths
+
             for path in ('[x]#y', '#0[foo]', '.foo.x[z]', '[a].b#3'):
                 with pytest.raises(Exception):
                     func(data, path, *args, **kwargs)
@@ -88,31 +89,18 @@ class Common:
 
     @staticmethod
     def _make_mixed_mapping():
-        return {'x':
-                [5,
-                 [Object(
-                     y={
-                         'z':9})]]}
+        return {'x': [5, [Object(y={'z': 9})]]}
 
     @staticmethod
     def _make_mixed_sequence():
-        return [True,
-                {'x':
-                 {'y':
-                  Object(
-                      z=[9])}}]
+        return [True, {'x': {'y': Object(z=[9])}}]
 
     @staticmethod
     def _make_mixed_object():
-        return Object(x=
-                      Object(y={
-                          'z': 5, 'a': [
-                              -2,
-                              {'b': 9}]}))
+        return Object(x=Object(y={'z': 5, 'a': [-2, {'b': 9}]}))
 
 
 class TestGet(Common):
-
     def test_01_mapping(self):
         data = {'x': 5}
         assert nested.get(data, '[x]') == 5
@@ -166,7 +154,7 @@ class TestGet(Common):
 
     def test_03_sequence_mixed(self):
         data = self._make_mixed_sequence()
-        assert nested.get(data, '#0') == True
+        assert nested.get(data, '#0') is True
         assert nested.get(data, '#1[x][y]') == Object(z=[9])
         assert nested.get(data, '#1[x][y].z#0') == 9
 
@@ -191,7 +179,6 @@ class TestGet(Common):
 
 
 class TestSet(Common):
-
     def test_01_mapping(self):
         data = {'x': 5}
         nested.set(data, '[x]', value=8)
@@ -315,11 +302,11 @@ class TestSet(Common):
 
 
 class TestUpdate(Common):
-
     @staticmethod
     def MK_ADD(x):
         def transform(node):
             return node.value + x
+
         return transform
 
     @staticmethod
@@ -334,6 +321,7 @@ class TestUpdate(Common):
     def CONST(value):
         def transform(_):
             return value
+
         return transform
 
     def test_01_mapping(self):
@@ -391,23 +379,23 @@ class TestUpdate(Common):
         assert data.z.a == 'SimpleNamespace-a-12'
 
     def test_02_non_compound_types_validation(self):
-        self.check_non_compound_types_validation(nested.update,
-                                                 transform=self.REPR_NODE)
+        self.check_non_compound_types_validation(
+            nested.update, transform=self.REPR_NODE)
 
     def test_02_mapping_validation(self):
         data = {'x': {'y': 6}}
-        self.check_mapping_validation(data, nested.update,
-                                      transform=self.REPR_NODE)
+        self.check_mapping_validation(
+            data, nested.update, transform=self.REPR_NODE)
 
     def test_02_sequence_validation(self):
         data = [5, 3, [9]]
-        self.check_sequence_validation(data, nested.update,
-                                       transform=self.REPR_NODE)
+        self.check_sequence_validation(
+            data, nested.update, transform=self.REPR_NODE)
 
     def test_02_object_validation(self):
         data = Object(x=5, y=3, z=Object(a=9))
-        self.check_object_validation(data, nested.update,
-                                     transform=self.REPR_NODE)
+        self.check_object_validation(
+            data, nested.update, transform=self.REPR_NODE)
 
     def test_03_mapping_mixed(self):
         data = self._make_mixed_mapping()

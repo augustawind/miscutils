@@ -21,6 +21,7 @@ def intersperse(item, iterable):
     if not hasattr(iterable, '__next__'):
         iterable = iter(iterable)
     yield next(iterable)
+
     for x in iterable:
         yield item
         yield x

@@ -47,10 +47,11 @@ index         `"#" parameter`                integer    `obj[param]`
 """
 from collections import OrderedDict, namedtuple
 from enum import Enum
-from operator import getitem, setitem
 
-__all__ = ['get', 'set', 'update', 'DataNode', 'MissingRHSOperator',
-           'MissingLHSOperator', 'UnexpectedRHSOperator', 'MissingValueChar']
+__all__ = [
+    'get', 'set', 'update', 'DataNode', 'MissingRHSOperator',
+    'MissingLHSOperator', 'UnexpectedRHSOperator', 'MissingValueChar'
+]
 
 DataNode = namedtuple('DataNode', 'value action parent')
 
@@ -63,9 +64,7 @@ LHS_OPS = OrderedDict((
     ('[', Accessor.KEY),
     ('#', Accessor.INDEX),
 ))
-RHS_OPS = OrderedDict((
-    (Accessor.KEY, ']'),
-))
+RHS_OPS = OrderedDict(((Accessor.KEY, ']'), ))
 
 OP_CHARS = [
     *LHS_OPS.keys(),
@@ -96,6 +95,7 @@ def get(data, path):
         >>> nested.get(obj, '#2[foo].y')
         -2
     """
+
     return get_with_context(data, path).value
 
 
@@ -111,11 +111,13 @@ def set(data, path, value):
 
     Returns:
         The modified ``data`` object. Since this function mutates ``data``, the
+
         return value is not meaningful and is simply a convenience to allow
         method chaining.
     """
     node = get_with_context(data, path)
     put(node.parent, node.action, value)
+
     return data
 
 
@@ -129,16 +131,19 @@ def update(data, path, transform):
         path (str): Path to the target value in ``data``.
         transform (callable): Callable that transforms the target value.
             It should take a ``DataNode`` instance as its sole argument. Its
+
             return value will replace the target value in ``data``.
 
     Returns:
         The modified ``data`` object. Since this function mutates ``data``, the
+
         return value is not meaningful and is simply a convenience to allow
         method chaining.
     """
     node = get_with_context(data, path)
     value = transform(node)
     put(node.parent, node.action, value)
+
     return data
 
 
@@ -153,19 +158,23 @@ def delete(data, path):
 
     Returns:
         The modified ``data`` object. Since this function mutates ``data``, the
+
         return value is not meaningful and is simply a convenience to allow
         method chaining.
     """
     node = get_with_context(data, path)
     rm(node.parent, node.action)
+
     return data
 
 
 def get_with_context(data, path):
     actions = parse_actions(path)
+
     for action in actions:
         parent = data
         data = pick(data, action)
+
     return DataNode(
         value=data,
         action=action,
@@ -221,14 +230,17 @@ def parse_actions(path):
 
         if accessor is None:
             # If no current accessor, assert that char is an lhs operator
+
             if not lhs_op:
                 raise MissingLHSOperator(char)
             # Assign the new operator
             accessor = lhs_op
         else:
             # If char is not an operator char, append it to current value
+
             if char not in OP_CHARS:
                 item += char
+
                 continue
 
             # Otherwise, translate current op into action
@@ -237,16 +249,21 @@ def parse_actions(path):
 
             # If the current op expects a rhs op char...
             rhs_op_char = RHS_OPS.get(accessor)
+
             if rhs_op_char:
                 # ...raise error if the current char is an lhs op char
+
                 if lhs_op:
                     raise MissingRHSOperator(accessor, char)
                 # ...clear current op if current char is the rhs op char
+
                 if char == rhs_op_char:
                     accessor = None
+
                 continue
 
             # Else if the current op has no rhs op char...
+
             if lhs_op:
                 # ...if current char is an lhs op char, start new accessor
                 accessor = lhs_op
@@ -255,12 +272,15 @@ def parse_actions(path):
                 raise UnexpectedRHSOperator(char)
 
     # Process final accessor if it had no rhs op char
+
     if accessor is not None:
         # Raise an error if no value was present
+
         if not item:
             raise MissingValueChar(accessor)
 
         # Raise an error if op expects a rhs op char
+
         if accessor in RHS_OPS:
             for char, op in LHS_OPS.items():
                 if op is accessor:
@@ -277,7 +297,6 @@ class Error(Exception):
 
 
 class MissingRHSOperator(Error):
-
     def __init__(self, op, char):
         super().__init__(
             f"missing rhs operator: accessor started with char '{char}':"
@@ -295,14 +314,13 @@ class MissingLHSOperator(Error):
 
 
 class UnexpectedRHSOperator(Error):
-
     def __init__(self, char):
         super().__init__(f"unexpected rhs operator `{char}`")
 
 
 class MissingValueChar(Error):
-
     def __init__(self, op):
-        op_char = [char for char, operator in LHS_OPS.items()
-                   if op is operator][0]
+        op_char = [
+            char for char, operator in LHS_OPS.items() if op is operator
+        ][0]
         super().__init__(f"missing value after lhs operator `{op_char}`")
