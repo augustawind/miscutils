@@ -44,19 +44,6 @@ attr          `"." parameter`                string     `getattr(obj, param)`
 key           `"[" parameter "]"`            string     `obj[param]`
 index         `"#" parameter`                integer    `obj[param]`
 ============  =============================  =========  ===============
-
-Examples:
-
-```python
->>> from utils import nested
->>> obj = [None, {'foo': type('T', (object,), {'x': 8, 'y': -2})}]
->>> nested.get(obj, '#0')
-None
->>> nested.get(obj, '#2[foo]')
-<class '__main__.T'>
->>> nested.get(obj, '#2[foo].y')
--2
-```
 """
 from collections import OrderedDict, namedtuple
 from enum import Enum
@@ -98,6 +85,16 @@ def get(data, path):
 
     Returns:
         The value of the target property.
+
+    Examples:
+        >>> from utils import nested
+        >>> obj = [None, {'foo': type('T', (object,), {'x': 8, 'y': -2})}]
+        >>> nested.get(obj, '#0')
+        None
+        >>> nested.get(obj, '#2[foo]')
+        <class '__main__.T'>
+        >>> nested.get(obj, '#2[foo].y')
+        -2
     """
     return get_with_context(data, path).value
 
@@ -145,6 +142,25 @@ def update(data, path, transform):
     return data
 
 
+def delete(data, path):
+    """Delete an arbitrarily nested property.
+
+    Args:
+        data: Compound data structure to traverse.
+            Must be mutable. Must support attribute access (`__getattribute__`)
+            or item access (`__getitem__`).
+        path (str): Path to the target value in ``data``.
+
+    Returns:
+        The modified ``data`` object. Since this function mutates ``data``, the
+        return value is not meaningful and is simply a convenience to allow
+        method chaining.
+    """
+    node = get_with_context(data, path)
+    rm(node.parent, node.action)
+    return data
+
+
 def get_with_context(data, path):
     actions = parse_actions(path)
     for action in actions:
@@ -176,6 +192,18 @@ def put(data, action, value):
         data[action.item] = value
     elif action.accessor is Accessor.INDEX:
         data[int(action.item)] = value
+    else:
+        raise ValueError("PROGRAM ERROR: unexpected accessor"
+                         f" `{action.accessor}`")
+
+
+def rm(data, action):
+    if action.accessor is Accessor.ATTR:
+        delattr(data, action.item)
+    elif action.accessor is Accessor.KEY:
+        del data[action.item]
+    elif action.accessor is Accessor.INDEX:
+        del data[int(action.item)]
     else:
         raise ValueError("PROGRAM ERROR: unexpected accessor"
                          f" `{action.accessor}`")
