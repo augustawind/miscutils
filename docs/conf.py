@@ -1,8 +1,8 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 #
-# utils documentation build configuration file, created by
-# sphinx-quickstart on Thu Nov 30 11:58:25 2017.
+# miscutils documentation build configuration file, created by
+# sphinx-quickstart on Mon Dec  4 12:21:22 2017.
 #
 # This file is execfile()d with the current directory set to its
 # containing dir.
@@ -19,7 +19,7 @@
 #
 import os
 import sys
-sys.path.insert(0, '/Users/dtr/projects/python-utils')
+sys.path.insert(0, '/Users/dtr/projects/miscutils')
 
 
 # -- General configuration ------------------------------------------------
@@ -31,10 +31,12 @@ sys.path.insert(0, '/Users/dtr/projects/python-utils')
 # Add any Sphinx extension module names here, as strings. They can be
 # extensions coming with Sphinx (named 'sphinx.ext.*') or your custom
 # ones.
-extensions = ['sphinx.ext.autodoc',
-              'sphinx.ext.todo',
-              'sphinx.ext.viewcode',
-              'sphinx.ext.napoleon']
+extensions = [
+    'sphinx.ext.autodoc',
+    'sphinx.ext.todo',
+    'sphinx.ext.viewcode',
+    'sphinx.ext.napoleon',
+]
 
 # Add any paths that contain templates here, relative to this directory.
 templates_path = ['_templates']
@@ -49,7 +51,7 @@ source_suffix = '.rst'
 master_doc = 'index'
 
 # General information about the project.
-project = 'utils'
+project = 'miscutils'
 copyright = '2017, Author'
 author = 'Author'
 
@@ -115,7 +117,7 @@ html_sidebars = {
 # -- Options for HTMLHelp output ------------------------------------------
 
 # Output file base name for HTML help builder.
-htmlhelp_basename = 'utilsdoc'
+htmlhelp_basename = 'miscutilsdoc'
 
 
 # -- Options for LaTeX output ---------------------------------------------
@@ -142,7 +144,7 @@ latex_elements = {
 # (source start file, target name, title,
 #  author, documentclass [howto, manual, or own class]).
 latex_documents = [
-    (master_doc, 'utils.tex', 'utils Documentation',
+    (master_doc, 'miscutils.tex', 'miscutils Documentation',
      'Author', 'manual'),
 ]
 
@@ -152,7 +154,7 @@ latex_documents = [
 # One entry per manual page. List of tuples
 # (source start file, name, description, authors, manual section).
 man_pages = [
-    (master_doc, 'utils', 'utils Documentation',
+    (master_doc, 'miscutils', 'miscutils Documentation',
      [author], 1)
 ]
 
@@ -163,8 +165,8 @@ man_pages = [
 # (source start file, target name, title, author,
 #  dir menu entry, description, category)
 texinfo_documents = [
-    (master_doc, 'utils', 'utils Documentation',
-     author, 'utils', 'One line description of project.',
+    (master_doc, 'miscutils', 'miscutils Documentation',
+     author, 'miscutils', 'One line description of project.',
      'Miscellaneous'),
 ]
 
