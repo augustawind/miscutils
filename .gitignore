@@ -92,3 +92,4 @@ ENV/
 # editors
 /.idea/
 *.sw[o,p]
+*.vim
