@@ -12,7 +12,7 @@ def merge(base, *args, _depth=0, **kwargs):
     Args:
         base (Mapping): The base mapping.
         *args: Additional mappings.
-        _depth (int): The depth to merge nested dicts. 
+        _depth (int): The depth to merge nested dicts.
         **kwargs: Key/value paids.
 
     Returns:
