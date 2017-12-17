@@ -1,5 +1,5 @@
 class classproperty:
-    """Like the @property decorator, but for class methods."""
+    """Turn a classmethod into a read-only property descriptor."""
 
     def __init__(self, method=None):
         self.fget = method
