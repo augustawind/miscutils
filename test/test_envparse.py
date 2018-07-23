@@ -18,14 +18,12 @@ class TestEnvSettings:
 
     def test_nested(self):
         settings = EnvSettings(
-            'app',
-            Param('foo', bool),
-            EnvSettings(
-                'nested',
-                Param('bar', int),
-                Param('baz', str, default='jazzz'),
+            foo=Param(bool),
+            nested=EnvSettings(
+                bar=Param(int),
+                baz=Param(str, default='jazzz'),
             ),
-        )
+        ).register('app')
         env = dict(
             APP_FOO='1',
             APP_NESTED_BAR='8',

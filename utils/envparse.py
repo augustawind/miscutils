@@ -1,4 +1,5 @@
 import os
+from collections import OrderedDict
 from typing import Any
 
 
@@ -8,9 +9,9 @@ class DEFAULT:
 
 class Param:
 
-    def __init__(self, name: str, type_: type=str, default: Any=DEFAULT,
-                 required=True):
-        self.name = name
+    def __init__(self, type_: type=str, default: Any=DEFAULT,
+                 required: bool=True):
+        self.name = 'param'
         self.type = type_
         if default is DEFAULT:
             self.default = None
@@ -21,6 +22,12 @@ class Param:
 
         self.breadcrumbs = []
         self.prefix = None
+
+    def register(self, name, prefix, breadcrumbs):
+        self.name = name
+        self.prefix = prefix
+        self.breadcrumbs = breadcrumbs
+        return self
 
     @property
     def envvar(self):
@@ -51,24 +58,30 @@ class Param:
 
 class EnvSettings(dict):
 
-    def __init__(self, name: str, *params: Param):
+    def __init__(self, name: str=None, **params):
         super().__init__()
         self.name = name
-        self.params = []
-        self.extend(*params, breadcrumbs=[])
+        self.kwargs = params
+        self.params = OrderedDict()
 
-    def extend(self, *params, breadcrumbs=None):
-        if not breadcrumbs:
-            breadcrumbs = []
+    def register(self, name):
+        self.name = name
+        self.extend(**self.kwargs)
+        return self
 
-        for p in params:
+    def extend(self, _breadcrumbs: list=None, **params):
+        if _breadcrumbs is None:
+            _breadcrumbs = []
+
+        for name, p in params.items():
             if isinstance(p, EnvSettings):
-                self.extend(*p.params, breadcrumbs=[*breadcrumbs, p.name])
+                p.register(name)
+                self.extend(_breadcrumbs=[*_breadcrumbs, name], **p.params)
                 continue
-
+            p.register(name, self.name, _breadcrumbs)
             p.prefix = self.name
-            p.breadcrumbs.extend(breadcrumbs)
-            self.params.append(p)
+            p.breadcrumbs.extend(_breadcrumbs)
+            self.params[name] = p
 
     def __getattr__(self, attr):
         return self.__getitem__(attr)
@@ -77,10 +90,15 @@ class EnvSettings(dict):
         return self.__setitem__(key, val)
 
     def read(self, env=os.environ):
-        for param in self.params:
+        for name, param in self.params.items():
+            print(name)
             src = env.get(param.envvar)
+            print(param.envvar)
+            print(src)
             val = param.read(src)
+            print(val)
             settings = self
+            print()
             for key in param.breadcrumbs:
                 settings = settings.setdefault(key, EnvSettings(key))
-            settings[param.name] = val
+            settings[name] = val
