@@ -133,38 +133,33 @@ class Param:
             raise InvalidValue(self, value, expected=self.type.__name__)
 
 
-class EnvSettings(dict):
+class EnvSettings:
 
     def __init__(self, name: str=None, **params):
         super().__init__()
         self.name = name
-        self.kwargs = params
+        self.initial_params = params
         self.params = OrderedDict()
 
     def register(self, name):
         self.name = name
-        self.extend(**self.kwargs)
+        self.extend(**self.initial_params)
         return self
 
-    def extend(self, _breadcrumbs: list=None, **params):
-        if _breadcrumbs is None:
-            _breadcrumbs = []
+    def extend(self, breadcrumbs: list=None, **params):
+        if breadcrumbs is None:
+            breadcrumbs = []
 
-        for name, p in params.items():
-            if isinstance(p, EnvSettings):
-                p.register(name)
-                self.extend(_breadcrumbs=[*_breadcrumbs, name], **p.params)
+        for name, param in params.items():
+            if isinstance(param, EnvSettings):
+                param.register(name)
+                self.extend(breadcrumbs=[*breadcrumbs, name], **param.params)
                 continue
-            p.register(name, self.name, _breadcrumbs)
-            p.prefix = self.name
-            p.breadcrumbs.extend(_breadcrumbs)
-            self.params[name] = p
 
-    def __getattr__(self, attr):
-        return self.__getitem__(attr)
-
-    def __setattr__(self, key, val):
-        return self.__setitem__(key, val)
+            param.register(name, self.name, breadcrumbs)
+            param.prefix = self.name
+            param.breadcrumbs.extend(breadcrumbs)
+            self.params[name] = param
 
     def read(self, env=os.environ) -> Namespace:
         ns = Namespace()
