@@ -82,7 +82,7 @@ class TestEnvSettings:
             foo=Param(bool),
             bar=Param(int),
             baz=Param(str, default='quux'),
-        ).register('var')
+        ).register('var', [])
         env = dict(
             VAR_FOO='True',
             VAR_BAR='8',
@@ -103,7 +103,7 @@ class TestEnvSettings:
                     quux=Param(float),
                 ),
             ),
-        ).register('app')
+        ).register('app', [])
         env = dict(
             APP_FOO='1',
             APP_NESTED_BAR='8',
