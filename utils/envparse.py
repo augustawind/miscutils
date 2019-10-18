@@ -1,7 +1,8 @@
 import os
 from collections import OrderedDict
-from typing import Any
-import argparse
+from typing import (
+    Any, Dict, Generic, Iterable, Mapping, Optional, Union, Type, TypeVar
+)
 
 from utils.mappings import Namespace
 
@@ -9,32 +10,32 @@ from utils.mappings import Namespace
 class Error(Exception):
     """Base Exception type for the ``envparse`` module."""
 
-    def _fmt(self, msg):
+    def _fmt(self, msg: str) -> str:
         return f'error: {msg}'
 
 
 class InvalidParam(Error):
     """Invalid ``Param`` instantiation."""
 
-    def __init__(self, param, msg):
+    def __init__(self, param: 'Param', msg: str):
         self.path = None
         self.param = param
         self.msg = msg
 
-    def __str__(self):
+    def __str__(self) -> str:
         return self._fmt(f'invalid param defined at {self.path}: {self.msg}')
 
 
 class ParseError(Error):
-    """A parameter was not satisfied."""
+    """A parameter was not satisfied while parsing."""
 
-    def __init__(self, param):
+    def __init__(self, param: 'Param'):
         self.param = param
 
 
 class InvalidValue(ParseError):
 
-    def __init__(self, param, value, expected):
+    def __init__(self, param: 'Param', value: Any, expected: Any):
         super().__init__(param)
         self.value = value
         self.expected = expected
@@ -55,21 +56,28 @@ class MissingValue(ParseError):
 class DEFAULT:
     """Non-None default value."""
 
+Default = Type[DEFAULT]
 
-class Param:
+T = TypeVar('ParamType', str, int, float, bool)
 
-    def __init__(self, type_: type=str, *, default: Any=DEFAULT,
-                 required: bool=DEFAULT):
+class Param(Generic[T]):
+
+    def __init__(
+        self,
+        type_: Type[T]=str,
+        *,
+        default: Union[T, Default] = DEFAULT,
+        required: Union[bool, Default] = DEFAULT,
+    ):
         self.type = type_
         self.default = default
         self.required = required
 
         self.name = None
         self.breadcrumbs = []
-        self.prefix = None
 
     def _prepare(self):
-        """Validate and prepare the ``Param`` for reading values."""
+        """Validates and prepares the Param for reading values."""
         # If there is no `default`, `required` defaults to True.
         if self.default is DEFAULT:
             self.default = None
@@ -89,7 +97,24 @@ class Param:
                     f' `default` has type {type(self.default).__name__}',
                 )
 
-    def register(self, name, prefix, breadcrumbs):
+    def register(self, name: str, breadcrumbs: Iterable[str]) -> 'Param[T]':
+        """Registers the Param within the larger config structure.
+
+        This method is called by the parent ``EnvSettings`` to validate the
+        parameter, contextualize it within the config structure, and get it
+        into a ready state for parsing.
+
+        Args:
+            name: The parameter's key in the parent ``EnvSettings``.
+            breadcrumbs: A series of keys that locates the parameter from the
+                top-level ``EnvSettings``.
+
+        Returns:
+            self: This is just a convenience to allow method chaining.
+
+        Raises:
+            InvalidParam: If the Param is invalid.
+        """
         try:
             self._prepare()
         except InvalidParam as exc:
@@ -97,22 +122,30 @@ class Param:
             raise
 
         self.name = name
-        self.prefix = prefix
         self.breadcrumbs = breadcrumbs
 
         return self
 
     @property
-    def envvar(self):
-        prefix = ''
-        if self.prefix:
-            prefix = f'{self.prefix}_'
-        if self.breadcrumbs:
-            prefix += f"{'_'.join(self.breadcrumbs)}_"
-        var = prefix + self.name
-        return var.upper()
+    def envvar(self) -> str:
+        """Returns the environment variable that will be read by this Param."""
+        return '_'.join((*self.breadcrumbs, self.name)).upper()
 
-    def read(self, value: str) -> Any:
+    def read(self, env: Mapping[str, str]) -> T:
+        """Attempts to read ``self.envvar`` from the given environment.
+
+        Args:
+            env: The environment to read from. Can be any mapping type.
+
+        Returns:
+            The result of reading and processing the environment variable.
+
+        Raises:
+            MissingValue: If there is no value (and the Param is required).
+            InvalidValue: If the value exists but is invalid.
+        """
+        value = env.get(self.envvar)
+
         if not value:
             if self.required:
                 raise MissingValue(self)
@@ -132,39 +165,55 @@ class Param:
 
 
 class EnvSettings:
+    """A simple parser for keyed data.
 
-    def __init__(self, name: str=None, **params):
+    EnvSettings parses flat data into nested structures. Parsers can be
+    designed recursively in a nested map structure, where ``Param``s are the
+    terminal nodes and ``EnvSettings`` introduce another level of nesting.
+
+    Example:
+        >>> parser = EnvSettings(
+                name=Param(str),
+                class=Param(str, default='monk'),
+                skills=EnvSettings(
+                    meditation=Param(bool),
+                    fighting=Param(bool),
+                ),
+            ).register('player', [])
+        >>> env = dict(
+                PLAYER_NAME='Foo',
+                PLAYER_SKILLS_MEDITATION='true',
+                PLAYER_SKILLS_FIGHTING='false',
+            )
+        >>> settings = parser.read(env)
+        >>> print(settings.name)
+        Foo
+        >>> print(settings.skills.meditation)
+        True
+        >>> print(settings.skills.fighting)
+        False
+    """
+
+    def __init__(self, **params: Union[Param, 'EnvSettings']):
         super().__init__()
-        self.name = name
         self.initial_params = params
         self.params = OrderedDict()
 
-    def register(self, name):
+        self.name = None
+        self.breadcrumbs = []
+
+    def register(self, name: str, breadcrumbs: Iterable[str]) -> 'EnvSettings':
         self.name = name
-        self.extend(**self.initial_params)
+        self.breadcrumbs = [] if breadcrumbs is None else breadcrumbs
+
+        for key, param in self.initial_params.items():
+            param.register(key, breadcrumbs=[*self.breadcrumbs, self.name])
+            self.params[key] = param
+
         return self
 
-    def extend(self, breadcrumbs: list=None, **params):
-        if breadcrumbs is None:
-            breadcrumbs = []
-
-        for name, param in params.items():
-            if isinstance(param, EnvSettings):
-                param.register(name)
-                self.extend(breadcrumbs=[*breadcrumbs, name], **param.params)
-                continue
-
-            param.register(name, self.name, breadcrumbs)
-            param.prefix = self.name
-            param.breadcrumbs.extend(breadcrumbs)
-            self.params[name] = param
-
-    def read(self, env=os.environ) -> Namespace:
+    def read(self, env: Mapping[str, str]) -> Namespace:
         ns = Namespace()
         for name, param in self.params.items():
-            raw_value = env.get(param.envvar)
-            value = param.read(raw_value)
-            for key in param.breadcrumbs:
-                ns.setdefault(key, EnvSettings(key))
-            ns[name] = value
+            ns[name] = param.read(env)
         return ns
