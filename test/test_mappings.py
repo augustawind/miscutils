@@ -18,10 +18,15 @@ class MappingTest:
 
 class TestDictSet(MappingTest):
 
-    def test_dict_basics(self, items1):
-        d = maps.DictSet(items1)
-        assert len(d) == len(items1)
-        for k, v in items1:
+    def test_dict_basics(self):
+        items = (('a', 0), ('b', 1), ('c', 2))
+        d = maps.DictSet(items)
+
+        assert len(d) == len(items)
+        assert d == maps.DictSet(items)
+        assert d == maps.DictSet(d)
+
+        for k, v in items:
             assert d[k] == v
             d[k] += 1
             del d[k]

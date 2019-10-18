@@ -2,7 +2,25 @@ from collections.abc import Iterable, Mapping, MutableMapping, Set
 
 
 class DictSet(MutableMapping, Set):
-    """A dict that also functions as a set over its keys."""
+    """A dict that also functions as a set over its keys.
+
+    DictSets are just like regular dictionaries but can also be treated as sets
+    over their keys, and have access to modified versions of native set
+    operations that function as closely as possible to a native set while still
+    preserving the values associated with each key.
+
+    This is not limited to operations between two DictSets. All of DictSet's set
+    operations work with any Mapping type, and some work with Set types as well.
+
+    When performing set operations between a DictSet and another Mapping type,
+    if the returned DictSet contains keys that were in both operands, the
+    values are taken from the leftmost Mapping.
+
+    The `isdisjoint` and `intersection` operations work with any Iterable type.
+    The `issubset`, `issuperset` and `difference` operations work with any
+    Mapping or Set type. The `union` and `symmetric_difference` operations work
+    with any Mapping type.
+    """
 
     def __init__(self, *args, **kwargs):
         self.__dict = dict(*args, **kwargs)
@@ -55,6 +73,16 @@ class DictSet(MutableMapping, Set):
             if elem not in self:
                 return False
         return True
+
+    def __lt__(self, other):
+        if not isinstance(other, (Mapping, Set)):
+            return NotImplemented
+        return len(self) < len(other) and self.__le__(other)
+
+    def __gt__(self, other):
+        if not isinstance(other, (Mapping, Set)):
+            return NotImplemented
+        return len(self) > len(other) and self.__ge__(other)
 
     def __or__(self, other):
         if not isinstance(other, Mapping):
