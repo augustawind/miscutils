@@ -5,17 +5,17 @@ import pytest
 from utils import mappings as maps
 
 
-class Namespace:
+class TestNamespace:
 
     @pytest.fixture
     def ns(self):
-        return maps.Namespace((('a', 0), ('b', 1)), c=2)
+        return maps.Namespace((('a', 0), ('b', 1), ('c', 2)))
 
     def test_create(self, ns):
         assert ns.a == ns['a'] == 0
         assert ns.b == ns['b'] == 1
         assert ns.c == ns['c'] == 2
-        assert set(ns.items()) == set(pairs)
+        assert set(ns.items()) == set((('a', 0), ('b', 1), ('c', 2)))
 
     def test_update(self, ns):
         ns.d = 3
@@ -30,7 +30,7 @@ class Namespace:
             ns['x']
 
     def test_copy(self):
-        ns = maps.Namespace((('a', 0), ('b', maps.Namespace('x', 9))), c=5)
+        ns = maps.Namespace((('a', 0), ('b', maps.Namespace(x=9)), ('c', 5)))
         assert copy.copy(ns) == ns
         assert copy.deepcopy(ns) == ns
 

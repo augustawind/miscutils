@@ -1,10 +1,4 @@
-from collections.abc import Mapping, MutableMapping, Set
-
-
-def subset(m0, m1):
-    return {k: v for k, v in m0.items() if k in m1}
-
-
+from collections.abc import Mapping, Set
 class DictSet(dict, Set):
     """A dict that also functions as a set over its keys."""
 
@@ -50,18 +44,32 @@ class FrozenDictSet(FrozenDict, Set):
     """A ``FrozenDict`` that also functions as a set over its keys."""
 
 
-class _DotAccessItems:
-
-    def __getattr__(self, attr):
-        return self.__getitem__(attr)
-
-    def __setattr__(self, key, value):
-        return self.__setitem__(key, value)
-
-
-class Namespace(dict, _DotAccessItems):
+class Namespace(dict):
     """A dict that supports dot-access of its keys."""
 
+    def __getattr__(self, attr):
+        return self[attr]
 
-class FrozenNamespace(FrozenDict, _DotAccessItems):
+    def __setattr__(self, attr, value):
+        self[attr] = value
+
+    def __delattr__(self, attr):
+        del self[attr]
+
+    def __copy__(self):
+        return Namespace(self)
+
+    def __getstate__(self):
+        return self
+
+    def __setstate__(self, state):
+        self = state
+
+    __deepcopy__ = None
+
+
+class FrozenNamespace(FrozenDict):
     """A ``FrozenDict`` that supports dot-access of its keys."""
+
+    def __getattr__(self, attr):
+        return self.__dict[attr]
