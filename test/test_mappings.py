@@ -5,6 +5,71 @@ import pytest
 from utils import mappings as maps
 
 
+class MappingTest:
+
+    @pytest.fixture
+    def items1(self):
+        return (('a', 0), ('b', 1), ('c', 2))
+
+    @pytest.fixture
+    def items2(self):
+        return (('z', 9), ('y', 8), ('x', 7))
+
+
+class TestDictSet(MappingTest):
+
+    def test_dict_basics(self, items1):
+        d = maps.DictSet(items1)
+        assert len(d) == len(items1)
+        for k, v in items1:
+            assert d[k] == v
+            d[k] += 1
+            del d[k]
+        assert len(d) == 0
+
+    def test_set_ops(self):
+        dx = maps.DictSet((('a', 0), ('b', 1), ('c', 2)))
+
+        # disjoint
+        assert dx.isdisjoint({'x', 'y', 'z'})
+        assert dx.isdisjoint(maps.DictSet(x=0, y=1, z=2))
+        assert not dx.isdisjoint(maps.DictSet(a=5))
+
+        # subset/superset
+        dxx = maps.DictSet(dx)
+        assert dx <= dxx
+        assert dx >= dxx
+        assert not dx < dxx
+        assert not dx > dxx
+
+        # proper subset/superset
+        dxx['d'] = 3
+        assert dx < dxx
+        assert dxx > dx
+
+        # union
+        dy = maps.DictSet(c=3, d=4)
+        assert dx | dy == maps.DictSet(a=0, b=1, c=3, d=4)
+        assert dy | dx == maps.DictSet(a=0, b=1, c=2, d=4)
+
+        # intersection
+        assert dx & dy == maps.DictSet(c=2)
+        assert dy & dx == maps.DictSet(c=3)
+
+        # difference
+        assert dx - dy == maps.DictSet(a=0, b=1)
+        assert dy - dx == maps.DictSet(d=4)
+
+        # symmetric difference
+        assert dx ^ dy == maps.DictSet(a=0, b=1, d=4)
+        assert dy ^ dx == maps.DictSet(a=0, b=1, d=4)
+
+    def test_copy(self):
+        ns = maps.DictSet((('a', 0), ('b', maps.DictSet(x=9)), ('c', 5)))
+        assert copy.copy(ns) == ns
+        assert copy.deepcopy(ns) == ns
+
+
 class TestFrozenDict:
 
     @pytest.fixture
