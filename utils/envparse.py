@@ -58,7 +58,7 @@ class DEFAULT:
 
 class Param:
 
-    def __init__(self, type_: type=str, default: Any=DEFAULT,
+    def __init__(self, type_: type=str, *, default: Any=DEFAULT,
                  required: bool=DEFAULT):
         self.type = type_
         self.default = default
@@ -70,18 +70,16 @@ class Param:
 
     def _prepare(self):
         """Validate and prepare the ``Param`` for reading values."""
-        # If there is no `default`, param MUST be required.
+        # If there is no `default`, `required` defaults to True.
         if self.default is DEFAULT:
             self.default = None
-            if self.required is False:
-                raise InvalidParam(self, 'param must be have a default or be required')
-            self.required = True
+            if self.required is DEFAULT:
+                self.required = True
         # If there is a `default`, param MUST NOT be required.
         else:
             if self.required is True:
                 raise InvalidParam(self, 'cannot have a default and be required')
-            else:
-                self.required = False
+            self.required = False
 
             # `default` must be an instance of `type`.
             if not isinstance(self.default, self.type):

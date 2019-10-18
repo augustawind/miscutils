@@ -14,14 +14,6 @@ class TestParam:
     def test_validation(self):
         with pytest.raises(
             InvalidParam,
-            match='bar.foo',
-            message='should not permit required=False without a default',
-        ):
-            Param(int, required=False).register(
-                'foo', None, breadcrumbs=['bar']
-            )
-        with pytest.raises(
-            InvalidParam,
             match='bar.baz.foo',
             message='should not permit required=True with a default',
         ):
@@ -35,15 +27,22 @@ class TestParam:
         ):
             Param(int, default='x').register('foo', None, breadcrumbs=['baz'])
 
+        p = Param(int, required=False).register('foo', None, breadcrumbs=[])
+        assert p.required is False, \
+            'required=False should be allowed with no default'
+        assert p.default is None, \
+            'default should default to None'
         p = Param(int, default=5, required=False).register('foo', None, [])
         assert p.required is False, \
-            'explicit required=False should be allowed if a default is given'
+            'required=False should be allowed with a default'
         p = Param(int, default=5).register('foo', None, [])
         assert p.required is False, \
             'required should default to False if a default is given'
         p = Param(int).register('foo', None, [])
         assert p.required is True, \
             'required should default to True if no default is given'
+        assert p.default is None, \
+            'default should default to None'
 
     def test_envvar(self):
         p = Param(int).register('foo', None, breadcrumbs=[])
