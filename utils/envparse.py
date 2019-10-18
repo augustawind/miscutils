@@ -169,13 +169,8 @@ class EnvSettings(dict):
     def read(self, env=os.environ) -> Namespace:
         ns = Namespace()
         for name, param in self.params.items():
-            print(f"name={name!r}")
             raw_value = env.get(param.envvar)
-            print(f"param.envvar={param.envvar!r}")
-            print(f"raw_value={raw_value!r}")
             value = param.read(raw_value)
-            print(f"value={value!r}")
-            print()
             for key in param.breadcrumbs:
                 ns.setdefault(key, EnvSettings(key))
             ns[name] = value
