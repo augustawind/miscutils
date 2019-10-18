@@ -95,15 +95,19 @@ class TestEnvSettings:
             nested=EnvSettings(
                 bar=Param(int),
                 baz=Param(str, default='jazzz'),
+                biff=EnvSettings(
+                    quux=Param(float),
+                ),
             ),
         ).register('app')
         env = dict(
             APP_FOO='1',
             APP_NESTED_BAR='8',
-            APP_NESTED_BAZ='funkkk',
+            APP_NESTED_BIFF_QUUX='3.2',
         )
         ns = settings.read(env)
 
         assert ns.foo is True
         assert ns.nested.bar == 8
-        assert ns.nested.baz == 'funkkk'
+        assert ns.nested.baz == 'jazzz'
+        assert ns.nested.biff.quux == 3.2
