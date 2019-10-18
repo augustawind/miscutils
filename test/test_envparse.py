@@ -1,6 +1,12 @@
 import pytest
 
-from utils.envparse import EnvSettings, Param, InvalidParam
+from utils.envparse import (
+    EnvSettings,
+    InvalidParam,
+    InvalidValue,
+    MissingValue,
+    Param,
+)
 
 
 class TestParam:
@@ -8,39 +14,56 @@ class TestParam:
     def test_validation(self):
         with pytest.raises(
             InvalidParam,
-            match='foo',
-            message='should not permit required=False without a default',
-        ):
-            Param(3, required=False).register('foo', None, [])
-        with pytest.raises(
-            InvalidParam,
+            match='bar.baz.foo',
             message='should not permit required=True with a default',
         ):
-            Param(3, default=5, required=True).register('foo', None, [])
+            Param(int, default=5, required=True).register(
+                'foo', 'app', breadcrumbs=['bar', 'baz']
+            )
+        with pytest.raises(
+            InvalidParam,
+            match='baz.foo',
+            message='should ensure `default` is an instance of `type`',
+        ):
+            Param(int, default='x').register('foo', None, breadcrumbs=['baz'])
 
-        p = Param(3, default=5, required=False).register('foo', None, [])
+        p = Param(int, required=False).register('foo', None, breadcrumbs=[])
         assert p.required is False, \
-            'explicit required=False should be allowed if a default is given'
-        p = Param(3, default=5).register('foo', None, [])
+            'required=False should be allowed with no default'
+        assert p.default is None, \
+            'default should default to None'
+        p = Param(int, default=5, required=False).register('foo', None, [])
+        assert p.required is False, \
+            'required=False should be allowed with a default'
+        p = Param(int, default=5).register('foo', None, [])
         assert p.required is False, \
             'required should default to False if a default is given'
-        p = Param(3).register('foo', None, [])
+        p = Param(int).register('foo', None, [])
         assert p.required is True, \
             'required should default to True if no default is given'
+        assert p.default is None, \
+            'default should default to None'
 
     def test_envvar(self):
-        p = Param(3).register('foo', None, breadcrumbs=[])
+        p = Param(int).register('foo', None, breadcrumbs=[])
         assert p.envvar == 'FOO'
-        p = Param(3).register('foo', 'app', breadcrumbs=[])
+        p = Param(int).register('foo', 'app', breadcrumbs=[])
         assert p.envvar == 'APP_FOO'
-        p = Param(3).register('foo', None, breadcrumbs=['bar', 'baz'])
+        p = Param(int).register('foo', None, breadcrumbs=['bar', 'baz'])
         assert p.envvar == 'BAR_BAZ_FOO'
-        p = Param(3).register('foo', 'app', breadcrumbs=['quux'])
+        p = Param(int).register('foo', 'app', breadcrumbs=['quux'])
         assert p.envvar == 'APP_QUUX_FOO'
 
     def test_read_handles_default_and_required(self):
-        p = Param('bar').register('foo')
-        assert p.read('')
+        with pytest.raises(
+            MissingValue,
+            match='APP_BAR_FOO',
+            message='should raise an error if a required param is missing',
+        ):
+            Param(int).register('foo', 'app', ['bar']).read('')
+
+        p = Param(int, default=3).register('foo', None, [])
+        assert p.read('') == 3
 
 
 class TestEnvSettings:

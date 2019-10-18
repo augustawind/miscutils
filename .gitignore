@@ -94,3 +94,4 @@ ENV/
 /.idea/
 *.sw[o,p]
 *.vim
+.vscode
