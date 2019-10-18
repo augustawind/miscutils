@@ -68,20 +68,6 @@ class Param:
         self.breadcrumbs = []
         self.prefix = None
 
-    def _parse_value(self, value: str) -> Any:
-        """Parse a str into a value of ``self.type``."""
-        if self.type is bool:
-            if value.lower() in ('1', 'true'):
-                return True
-            elif value.lower() in ('0', 'false'):
-                return False
-            raise InvalidValue(self, value, expected='bool')
-
-        try:
-            return self.type(value)
-        except (TypeError, ValueError):
-            raise InvalidValue(self, value, expected=self.type.__name__)
-
     def _prepare(self):
         """Validate and prepare the ``Param`` for reading values."""
         # If there is no `default`, param MUST be required.
@@ -133,8 +119,18 @@ class Param:
             if self.required:
                 raise MissingValue(self)
             return self.default
-        return self._parse_value(value)
 
+        if self.type is bool:
+            if value.lower() in ('1', 'true'):
+                return True
+            elif value.lower() in ('0', 'false'):
+                return False
+            raise InvalidValue(self, value, expected='bool')
+
+        try:
+            return self.type(value)
+        except (TypeError, ValueError):
+            raise InvalidValue(self, value, expected=self.type.__name__)
 
 
 class EnvSettings(dict):
