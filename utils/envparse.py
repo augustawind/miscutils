@@ -16,8 +16,9 @@ class Error(Exception):
 class InvalidParam(Error):
     """Invalid ``Param`` instantiation."""
 
-    def __init__(self, msg):
+    def __init__(self, param, msg):
         self.path = None
+        self.param = param
         self.msg = msg
 
     def __str__(self):
@@ -67,22 +68,46 @@ class Param:
         self.breadcrumbs = []
         self.prefix = None
 
-    def _validate(self):
+    def _parse_value(self, value: str) -> Any:
+        """Parse a str into a value of ``self.type``."""
+        if self.type is bool:
+            if value.lower() in ('1', 'true'):
+                return True
+            elif value.lower() in ('0', 'false'):
+                return False
+            raise InvalidValue(self, value, expected='bool')
+
+        try:
+            return self.type(value)
+        except (TypeError, ValueError):
+            raise InvalidValue(self, value, expected=self.type.__name__)
+
+    def _prepare(self):
+        """Validate and prepare the ``Param`` for reading values."""
         # If there is no `default`, param MUST be required.
         if self.default is DEFAULT:
             self.default = None
             if self.required is False:
-                raise InvalidParam('param must be have a default or be required')
+                raise InvalidParam(self, 'param must be have a default or be required')
             self.required = True
         # If there is a `default`, param MUST NOT be required.
-        elif self.required is True:
-            raise InvalidParam('cannot have a default and be required')
         else:
-            self.required = False
+            if self.required is True:
+                raise InvalidParam(self, 'cannot have a default and be required')
+            else:
+                self.required = False
+
+            # `default` must be an instance of `type`.
+            if not isinstance(self.default, self.type):
+                raise InvalidParam(
+                    self,
+                    f'param was defined with type {self.type.__name__}, but'
+                    f' `default` has type {type(self.default).__name__}',
+                )
 
     def register(self, name, prefix, breadcrumbs):
         try:
-            self._validate()
+            self._prepare()
         except InvalidParam as exc:
             exc.path = '.'.join((*breadcrumbs, name))
             raise
@@ -103,23 +128,13 @@ class Param:
         var = prefix + self.name
         return var.upper()
 
-    def read(self, src: str) -> Any:
-        if not src:
+    def read(self, value: str) -> Any:
+        if not value:
             if self.required:
                 raise MissingValue(self)
             return self.default
+        return self._parse_value(value)
 
-        if self.type is bool:
-            if src.lower() in ('1', 'true'):
-                return True
-            elif src.lower() in ('0', 'false'):
-                return False
-            raise InvalidValue(self, src, expected='bool')
-
-        try:
-            return self.type(src)
-        except (TypeError, ValueError):
-            raise InvalidValue(self, src, expected=self.type.__name__)
 
 
 class EnvSettings(dict):
