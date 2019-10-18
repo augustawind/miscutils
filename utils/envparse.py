@@ -1,7 +1,6 @@
 import os
 from collections import OrderedDict
-from typing import Any
-import argparse
+from typing import Any, Dict, List, Union
 
 from utils.mappings import Namespace
 
@@ -66,7 +65,6 @@ class Param:
 
         self.name = None
         self.breadcrumbs = []
-        self.prefix = None
 
     def _prepare(self):
         """Validate and prepare the ``Param`` for reading values."""
@@ -89,7 +87,7 @@ class Param:
                     f' `default` has type {type(self.default).__name__}',
                 )
 
-    def register(self, name, prefix, breadcrumbs):
+    def register(self, name, breadcrumbs):
         try:
             self._prepare()
         except InvalidParam as exc:
@@ -97,20 +95,13 @@ class Param:
             raise
 
         self.name = name
-        self.prefix = prefix
         self.breadcrumbs = breadcrumbs
 
         return self
 
     @property
     def envvar(self):
-        prefix = ''
-        if self.prefix:
-            prefix = f'{self.prefix}_'
-        if self.breadcrumbs:
-            prefix += f"{'_'.join(self.breadcrumbs)}_"
-        var = prefix + self.name
-        return var.upper()
+        return '_'.join((*self.breadcrumbs, self.name)).upper()
 
     def read(self, value: str) -> Any:
         if not value:
@@ -133,38 +124,30 @@ class Param:
 
 class EnvSettings:
 
-    def __init__(self, name: str=None, **params):
+    def __init__(self, **params):
         super().__init__()
-        self.name = name
         self.initial_params = params
         self.params = OrderedDict()
 
-    def register(self, name):
+        self.name = None
+        self.breadcrumbs = []
+
+    def register(self, name: str, breadcrumbs: List[str]=None) -> 'EnvSettings':
         self.name = name
-        self.extend(**self.initial_params)
+        self.breadcrumbs = [] if breadcrumbs is None else breadcrumbs
+
+        for key, param in self.initial_params.items():
+            param.register(key, breadcrumbs=[*self.breadcrumbs, self.name])
+            self.params[key] = param
+
         return self
-
-    def extend(self, breadcrumbs: list=None, **params):
-        if breadcrumbs is None:
-            breadcrumbs = []
-
-        for name, param in params.items():
-            if isinstance(param, EnvSettings):
-                param.register(name)
-                self.extend(breadcrumbs=[*breadcrumbs, name], **param.params)
-                continue
-
-            param.register(name, self.name, breadcrumbs)
-            param.prefix = self.name
-            param.breadcrumbs.extend(breadcrumbs)
-            self.params[name] = param
 
     def read(self, env=os.environ) -> Namespace:
         ns = Namespace()
         for name, param in self.params.items():
-            raw_value = env.get(param.envvar)
-            value = param.read(raw_value)
-            for key in param.breadcrumbs:
-                ns.setdefault(key, EnvSettings(key))
-            ns[name] = value
+            if isinstance(param, EnvSettings):
+                value = env
+            else:
+                value = env.get(param.envvar)
+            ns[name] = param.read(value)
         return ns
