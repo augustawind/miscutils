@@ -1,4 +1,6 @@
 from collections.abc import Mapping, Set
+
+
 class DictSet(dict, Set):
     """A dict that also functions as a set over its keys."""
 
