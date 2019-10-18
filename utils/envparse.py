@@ -1,6 +1,6 @@
 import os
 from collections import OrderedDict
-from typing import Any, Dict, List, Union
+from typing import Any, Dict, List, Mapping, Union
 
 from utils.mappings import Namespace
 
@@ -103,7 +103,9 @@ class Param:
     def envvar(self):
         return '_'.join((*self.breadcrumbs, self.name)).upper()
 
-    def read(self, value: str) -> Any:
+    def read(self, env: Mapping[str, str]) -> Any:
+        value = env.get(self.envvar)
+
         if not value:
             if self.required:
                 raise MissingValue(self)
@@ -142,12 +144,8 @@ class EnvSettings:
 
         return self
 
-    def read(self, env=os.environ) -> Namespace:
+    def read(self, env: Mapping[str, str] = os.environ) -> Namespace:
         ns = Namespace()
         for name, param in self.params.items():
-            if isinstance(param, EnvSettings):
-                value = env
-            else:
-                value = env.get(param.envvar)
-            ns[name] = param.read(value)
+            ns[name] = param.read(env)
         return ns

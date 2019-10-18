@@ -64,11 +64,15 @@ class TestParam:
             match='APP_BAR_FOO',
             message='empty input should raise an error if no default',
         ):
-            Param(int).register('foo', ['app', 'bar']).read('')
+            Param(int).register('foo', ['app', 'bar']).read({})
 
         p = Param(int, default=3).register('foo', [])
-        assert p.read('') == 3, \
+        assert p.read({}) == 3, \
             'empty input should use the provided default'
+
+        p = Param(int, required=False).register('foo', [])
+        assert p.read({}) == None, \
+            'if required is False but no default is given, use None'
 
 
 class TestEnvSettings:
