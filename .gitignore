@@ -63,6 +63,9 @@ instance/
 # Sphinx documentation
 docs/_build/
 docs/*.rst
+docs/Makefile
+docs/make.bat
+!docs/index.rst
 
 # PyBuilder
 target/
