@@ -17,7 +17,7 @@ class CaseStyle(metaclass=abc.ABCMeta):
         return cls.WORD_PATTERN.findall(string)
 
     @classmethod
-    def from_case(cls, case: Type['CaseStyle'], s: str):
+    def from_case(cls, case: Type['CaseStyle'], s: str) -> str:
         return cls.fmt(case.words(s))
 
 
