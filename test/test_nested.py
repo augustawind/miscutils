@@ -2,7 +2,7 @@ from types import SimpleNamespace as Object
 
 import pytest
 
-from utils import nested
+from miscutils import nested
 
 
 class Common:

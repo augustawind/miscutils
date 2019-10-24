@@ -2,7 +2,7 @@ import copy
 
 import pytest
 
-from utils import mappings as maps
+from miscutils import mappings as maps
 
 
 class MappingTest:

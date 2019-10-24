@@ -1,4 +1,4 @@
-from utils import case as c
+from miscutils import case as c
 
 
 class TestCaseConversions:

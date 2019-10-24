@@ -1,7 +1,7 @@
 import pytest
 
-from utils import seq
-from utils.merge import merge
+from miscutils import seq
+from miscutils.merge import merge
 
 
 class MergeTestBase:

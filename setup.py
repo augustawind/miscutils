@@ -17,5 +17,5 @@ if __name__ == '__main__':
         description="Miscellaneous Python utilities.",
         long_description=readme(),
         include_package_data=True,
-        packages=["utils"],
+        packages=["miscutils"],
     )

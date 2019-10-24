@@ -1,4 +1,4 @@
-from utils import seq
+from miscutils import seq
 
 
 def test_split():

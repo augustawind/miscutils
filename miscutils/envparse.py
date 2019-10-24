@@ -4,7 +4,7 @@ from typing import (
     Any, Dict, Generic, Iterable, Mapping, Optional, Union, Type, TypeVar
 )
 
-from utils.mappings import Namespace
+from miscutils.mappings import Namespace
 
 
 class Error(Exception):

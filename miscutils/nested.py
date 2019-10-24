@@ -86,7 +86,7 @@ def get(data, path):
         The value of the target property.
 
     Examples:
-        >>> from utils import nested
+        >>> from miscutils import nested
         >>> obj = [None, {'foo': type('T', (object,), {'x': 8, 'y': -2})}]
         >>> nested.get(obj, '#0')
         None

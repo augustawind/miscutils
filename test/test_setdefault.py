@@ -3,8 +3,8 @@ from functools import partial
 
 import pytest
 
-from utils.merge import merge
-from utils.setdefault import setdefault
+from miscutils.merge import merge
+from miscutils.setdefault import setdefault
 
 
 class SetDefaultTestBase:
