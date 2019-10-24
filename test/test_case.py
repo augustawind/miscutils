@@ -17,7 +17,7 @@ class TestCaseConversions:
     def run_test(self, start_case, end_case):
         for start, end in zip(self.data[start_case], self.data[end_case]):
             for fmt in self.formats:
-                assert c.convert(fmt.format(start), start_case, end_case) == \
+                assert end_case.from_case(start_case, fmt.format(start)) == \
                         fmt.format(end)
 
     def test_camel_to_camel(self):
