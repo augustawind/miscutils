@@ -109,14 +109,14 @@ class Param(Generic[T]):
     def register(self, name: str, breadcrumbs: Iterable[str]) -> "Param[T]":
         """Registers the Param within the larger config structure.
 
-        This method is called by the parent ``EnvSettings`` to validate the
+        This method is called by the parent ``EnvParser`` to validate the
         parameter, contextualize it within the config structure, and get it
         into a ready state for parsing.
 
         Args:
-            name: The parameter's key in the parent ``EnvSettings``.
+            name: The parameter's key in the parent ``EnvParser``.
             breadcrumbs: A series of keys that locates the parameter from the
-                top-level ``EnvSettings``.
+                top-level ``EnvParser``.
 
         Returns:
             self: This is just a convenience to allow method chaining.
@@ -173,18 +173,18 @@ class Param(Generic[T]):
             raise InvalidValue(self, value, expected=self.type.__name__)
 
 
-class EnvSettings:
+class EnvParser:
     """A simple parser for keyed data.
 
-    EnvSettings parses flat data into nested structures. Parsers can be
+    EnvParser parses flat data into nested structures. Parsers can be
     designed recursively in a nested map structure, where ``Param``s are the
-    terminal nodes and ``EnvSettings`` introduce another level of nesting.
+    terminal nodes and ``EnvParser`` introduce another level of nesting.
 
     Example:
-        >>> parser = EnvSettings(
+        >>> parser = EnvParser(
                 name=Param(str),
                 class=Param(str, default='monk'),
-                skills=EnvSettings(
+                skills=EnvParser(
                     meditation=Param(bool),
                     fighting=Param(bool),
                 ),
@@ -194,16 +194,16 @@ class EnvSettings:
                 PLAYER_SKILLS_MEDITATION='true',
                 PLAYER_SKILLS_FIGHTING='false',
             )
-        >>> settings = parser.read(env)
-        >>> print(settings.name)
+        >>> opts = parser.read(env)
+        >>> print(opts.name)
         Foo
-        >>> print(settings.skills.meditation)
+        >>> print(opts.skills.meditation)
         True
-        >>> print(settings.skills.fighting)
+        >>> print(opts.skills.fighting)
         False
     """
 
-    def __init__(self, **params: Union[Param, "EnvSettings"]):
+    def __init__(self, **params: Union[Param, "EnvParser"]):
         super().__init__()
         self.initial_params = params
         self.params = OrderedDict()
@@ -211,7 +211,7 @@ class EnvSettings:
         self.name = None
         self.breadcrumbs = []
 
-    def register(self, name: str, breadcrumbs: Iterable[str]) -> "EnvSettings":
+    def register(self, name: str, breadcrumbs: Iterable[str]) -> "EnvParser":
         self.name = name
         self.breadcrumbs = [] if breadcrumbs is None else breadcrumbs
 

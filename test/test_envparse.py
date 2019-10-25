@@ -1,7 +1,7 @@
 import pytest
 
 from miscutils.envparse import (
-    EnvSettings,
+    EnvParser,
     InvalidParam,
     InvalidValue,
     MissingValue,
@@ -76,29 +76,29 @@ class TestParam:
         ), "if required is False but no default is given, use None"
 
 
-class TestEnvSettings:
+class TestEnvParser:
     def test_flat(self):
-        settings = EnvSettings(
+        opts = EnvParser(
             foo=Param(bool), bar=Param(int), baz=Param(str, default="quux")
         ).register("var", [])
         env = dict(VAR_FOO="True", VAR_BAR="8")
-        ns = settings.read(env)
+        ns = opts.read(env)
 
         assert ns.foo is True
         assert ns.bar == 8
         assert ns.baz == "quux"
 
     def test_nested(self):
-        settings = EnvSettings(
+        opts = EnvParser(
             foo=Param(bool),
-            nested=EnvSettings(
+            nested=EnvParser(
                 bar=Param(int),
                 baz=Param(str, default="jazzz"),
-                biff=EnvSettings(quux=Param(float)),
+                biff=EnvParser(quux=Param(float)),
             ),
         ).register("app", [])
         env = dict(APP_FOO="1", APP_NESTED_BAR="8", APP_NESTED_BIFF_QUUX="3.2")
-        ns = settings.read(env)
+        ns = opts.read(env)
 
         assert ns.foo is True
         assert ns.nested.bar == 8

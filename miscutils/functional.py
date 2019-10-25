@@ -66,9 +66,7 @@ class curried(Generic[R]):
             self._kwargs,
         ) == (other._f, other._args_map, other._kwargs)
 
-    def __call__(
-        self, *args: Any, **kwargs: Any
-    ) -> Union["curried[R]", R]:
+    def __call__(self, *args: Any, **kwargs: Any) -> Union["curried[R]", R]:
         args_map, kwargs, complete = self.__add_arguments(
             self._args_map.copy(), args, kwargs
         )
