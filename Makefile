@@ -1,6 +1,6 @@
 .PHONY: fmt
 fmt:
-	pyfmt --line-length 79
+	pyfmt --line-length 79 --extra-black-args='--exclude=docs/' --extra-isort-args='--skip docs/'
 
 .PHONY: test
 test:

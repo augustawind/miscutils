@@ -53,8 +53,3 @@ OrderedDict({'foo': 1, 'bar': 2})
 
 A set that keeps track of the order of insertion. Like `OrderedDict`, but for
 sets.
-
-## easydoc
-
-Generate simple documentation from Python code. Should probably be in its own
-repo.
