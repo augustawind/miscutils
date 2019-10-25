@@ -1,16 +1,5 @@
-import os
 from collections import OrderedDict
-from typing import (
-    Any,
-    Dict,
-    Generic,
-    Iterable,
-    Mapping,
-    Optional,
-    Type,
-    TypeVar,
-    Union,
-)
+from typing import Any, Generic, Iterable, Mapping, Type, TypeVar, Union
 
 from miscutils.mappings import Namespace
 
@@ -212,13 +201,18 @@ class EnvParser:
         self.breadcrumbs = []
 
     def register(
-        self, name: str, breadcrumbs: Iterable[str] = None
+        self, name: str = None, breadcrumbs: Iterable[str] = None
     ) -> "EnvParser":
-        self.name = name
         self.breadcrumbs = [] if breadcrumbs is None else breadcrumbs
 
+        if name:
+            self.name = name
+            breadcrumbs = [*self.breadcrumbs, name]
+        else:
+            breadcrumbs = list(self.breadcrumbs)
+
         for key, param in self.initial_params.items():
-            param.register(key, breadcrumbs=[*self.breadcrumbs, self.name])
+            param.register(key, breadcrumbs=breadcrumbs)
             self.params[key] = param
 
         return self
