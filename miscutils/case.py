@@ -12,12 +12,12 @@ class CaseStyle:
     to define behavior:
 
     - For parsing from a string:
-      - **Must** define either ``WORD_PATTERN`` or ``parse``.
+        - **Must** define either ``WORD_PATTERN`` or ``parse``.
     - For converting into a string:
-      - **Must** define either ``SEPARATOR`` + ``fmt_word`` or ``fmt``
-      - ``fmt_word`` is not actually required, but by default it just returns
-        its input. To customize output you will probably want to define
-        ``fmt_word`` as well as ``SEPARATOR``.
+        - **Must** define either ``SEPARATOR`` + ``fmt_word`` or ``fmt``
+        - ``fmt_word`` is not actually required, but by default it just returns
+            its input. To customize output you will probably want to define
+            ``fmt_word`` as well as ``SEPARATOR``.
     - Define ``fmt_1st_word`` if you defined ``fmt_word`` but you need the
       first word to be formatted differently than the rest. By default all
       words are formatted using ``fmt_word``.
