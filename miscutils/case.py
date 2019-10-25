@@ -1,4 +1,4 @@
-"""case - tools for parsing and formatting strings into various case styles"""
+"""case - tools for parsing and formatting strings into various cases"""
 import re
 from typing import List
 
