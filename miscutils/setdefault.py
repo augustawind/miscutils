@@ -1,4 +1,4 @@
-from collections import Mapping, MutableSequence, Set
+from collections.abc import Mapping, MutableSequence, Set
 from functools import partial
 
 from .merge import merge
