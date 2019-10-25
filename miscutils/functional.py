@@ -4,7 +4,7 @@ from typing import Any, Callable, Generic, Tuple, TypeVar, Union
 
 from .merge import merge
 
-__all__ = ["curried", "CurriedFunc"]
+__all__ = ["curried"]
 
 
 class F:
@@ -21,7 +21,32 @@ class DEFAULT:
 R = TypeVar("R")
 
 
-class CurriedFunc(Generic[R]):
+class curried(Generic[R]):
+    """Wrap functions to provide support for [`currying`].
+
+    Args:
+        f (callable): The function to wrap.
+        args: Initial args to pass to the curried function.
+        kwargs: Initial kwargs to pass to the curried function.
+
+    Example:
+        >>> @curried
+        ... def greet(greeting, name, excited=False):
+        ...     return f"{greeting}, {name}{'!' if excited else '.'}"
+        ...
+        >>> greet("hello")("python")
+        'hello, python.'
+        >>> greet("hello", "python")
+        'hello, python.'
+        >>> greet_bro = greet(name="bro", excited=True)
+        >>> greet_bro("sup")
+        'sup, bro!'
+        >>> greet_bro("hey", excited=False)
+        'hey, bro.'
+
+    [`currying`]: https://stackoverflow.com/questions/36314/what-is-currying
+    """
+
     def __init__(self, f: Callable[..., R], *args: Any, **kwargs: Any):
         self._f = f
         argnames = f.__code__.co_varnames
@@ -30,14 +55,21 @@ class CurriedFunc(Generic[R]):
         self._args_map = dict.fromkeys(self._argnames, DEFAULT)
         self._kwargs = {}
 
-        self._args_map, self._kwargs, _ = self._apply(
+        self._args_map, self._kwargs, _ = self.__add_arguments(
             self._args_map, args, kwargs
         )
 
+    def __eq__(self, other):
+        return isinstance(other, curried) and (
+            self._f,
+            self._args_map,
+            self._kwargs,
+        ) == (other._f, other._args_map, other._kwargs)
+
     def __call__(
         self, *args: Any, **kwargs: Any
-    ) -> Union["CurriedFunc[R]", R]:
-        args_map, kwargs, complete = self._apply(
+    ) -> Union["curried[R]", R]:
+        args_map, kwargs, complete = self.__add_arguments(
             self._args_map.copy(), args, kwargs
         )
 
@@ -49,7 +81,7 @@ class CurriedFunc(Generic[R]):
         next_f._kwargs = kwargs
         return next_f
 
-    def _apply(
+    def __add_arguments(
         self, args_map: dict, args: tuple, kwargs: dict
     ) -> Tuple[dict, dict, bool]:
         # Populate positional args from `kwargs`, if any
@@ -73,13 +105,3 @@ class CurriedFunc(Generic[R]):
 
         complete = all(arg is not DEFAULT for arg in args_map.values())
         return args_map, kwargs, complete
-
-    def __eq__(self, other):
-        return isinstance(other, CurriedFunc) and (
-            self._f,
-            self._args_map,
-            self._kwargs,
-        ) == (other._f, other._args_map, other._kwargs)
-
-
-curried = CurriedFunc
