@@ -1,13 +1,7 @@
-from typing import Tuple
-
 from miscutils import functional as fx
 
 
 class TestCurried:
-
-    @staticmethod
-    def f_ret_curried(x: int) -> fx.Curried[Tuple[int, int]]:
-        return fx.Curried(lambda y: (x, y))
 
     def test_args(self):
         def func(x, y):
