@@ -56,9 +56,11 @@ class MissingValue(ParseError):
 class DEFAULT:
     """Non-None default value."""
 
+
 Default = Type[DEFAULT]
 
 T = TypeVar('ParamType', str, int, float, bool)
+
 
 class Param(Generic[T]):
 

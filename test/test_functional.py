@@ -1,30 +1,57 @@
+from typing import Tuple
+
 from miscutils import functional as fx
 
 
 class TestCurried:
 
     @staticmethod
-    def f_args(x, y):
-        return x, y
-
-    @staticmethod
-    def f_kws(a=3, b=False, c='foo'):
-        return a, b, c
-
-    @staticmethod
-    def f_args_kws(x, y, a=3, b=False):
-        return x, y, a, b
-
-    @staticmethod
     def f_kwonly(x, y, a=3, b=False, *, c='foo', d=-0.5):
         return x, y, a, b, c, d
 
-    def test_args(self):
-        f = fx.Curried(self.f_args)
-        f = f()
-        assert f == fx.Curried(self.f_args)
+    @staticmethod
+    def f_ret_curried(x: int) -> fx.Curried[Tuple[int, int]]:
+        return fx.Curried(lambda y: (x, y))
 
+    def test_args(self):
+        def func(x, y):
+            return x, y
+
+        f = fx.Curried(func)
+        assert f() == fx.Curried(func)
         f1 = f(1)
-        assert f1 == fx.Curried(self.f_args, 1)
+        assert f1 == fx.Curried(func, 1)
         assert f1(2) == (1, 2)
         assert f1(2) == (1, 2)
+
+        fy = f(y=2)
+        assert fy(1) == (1, 2)
+
+    def test_kws(self):
+        def func(a=3, b=False, c='foo'):
+            return a, b, c
+
+        f = fx.Curried(func)
+        assert f() == (3, False, 'foo')
+        assert f(a=5) == (5, False, 'foo')
+        assert f(a=5, b=True) == (5, True, 'foo')
+        assert f(c='bar') == (3, False, 'bar')
+        assert f(a=5, c='bar') == (5, False, 'bar')
+
+    def test_args_kws(self):
+        def func(x, y, a=3, b=False):
+            return x, y, a, b
+
+        f = fx.Curried(func)
+        assert f() == fx.Curried(func)
+        f1 = f(1)
+        assert f1 == fx.Curried(func, 1)
+        assert f1(b=True) == fx.Curried(func, 1, b=True)
+        assert f1(2) == (1, 2, 3, False)
+        assert f1(2, b=True) == (1, 2, 3, True)
+
+        fbc = f(a=5, b=True)
+        assert fbc == fx.Curried(func, a=5, b=True)
+        fbc1 = fbc(1)
+        assert fbc1 == fx.Curried(func, 1, a=5, b=True)
+        assert fbc1(2) == (1, 2, 5, True)

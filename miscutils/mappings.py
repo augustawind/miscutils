@@ -9,8 +9,9 @@ class DictSet(MutableMapping, Set):
     operations that function as closely as possible to a native set while still
     preserving the values associated with each key.
 
-    This is not limited to operations between two DictSets. All of DictSet's set
-    operations work with any Mapping type, and some work with Set types as well.
+    This is not limited to operations between two DictSets. All of DictSet's
+    set operations work with any Mapping type, and some work with Set types
+    as well.
 
     When performing set operations between a DictSet and another Mapping type,
     if the returned DictSet contains keys that were in both operands, the
@@ -157,7 +158,8 @@ class Namespace(dict):
         return self
 
     def __setstate__(self, state):
-        self = state
+        self.clear()
+        self.update(state)
 
     __deepcopy__ = None
 
