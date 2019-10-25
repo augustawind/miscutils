@@ -8,8 +8,8 @@ from .classproperty import classproperty
 class CaseStyle:
     """An abstract base class for strings in specific case styles.
 
-    There are two sets of attributes & methods that can be overridden on
-    child classes to define behavior:
+    There are two sets of attributes that can be overridden on child classes
+    to define behavior:
 
     - For parsing from a string:
       - **Must** define either ``WORD_PATTERN`` or ``parse``.
@@ -18,15 +18,17 @@ class CaseStyle:
       - ``fmt_word`` is not actually required, but by default it just returns
         its input. To customize output you will probably want to define
         ``fmt_word`` as well as ``JOIN_BY``.
-    - Define ``fmt_1st_word`` if you defined ``fmt_word`` but you need the first
-      word to be formatted differently than the rest. By default all words are
-      formatted using ``fmt_word``.
+    - Define ``fmt_1st_word`` if you defined ``fmt_word`` but you need the
+      first word to be formatted differently than the rest. By default all
+      words are formatted using ``fmt_word``.
     """
 
     def __init__(self, s: str):
         self._words = self.parse(s)
         assert len(self._words) > 0, \
-            f'could not parse str as case {self.__class__.__name__}'
+            f'unable to parse str as {self.__class__.__name__}'
+
+        self._cached__str__ = None
 
     def __str__(self):
         """Return a string representation of this ``CaseStyle``.
@@ -34,7 +36,9 @@ class CaseStyle:
         You shouldn't need to override this. To customize display, override
         ``CaseStyle.fmt`` instead.
         """
-        return self.fmt(self.words)
+        if not self._cached__str__:
+            self._cached__str__ = self.fmt(self.words)
+        return self._cached__str__
 
     @classproperty
     def WORD_PATTERN(cls) -> re.Pattern:
