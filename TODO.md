@@ -14,7 +14,7 @@ For example, a `DictView` might work like this:
 
 ```python
 >>> d = dict(a=1, b=2, c=3, d=4, e=5)
->>> view = DictView(dict, keys=('a', 'b', 'e'))
+>>> view = DictView(d, keys=('a', 'b', 'e'))
 >>> view['b']
 2
 >>> d['b'] = 30
@@ -56,4 +56,5 @@ sets.
 
 ## easydoc
 
-Generate simple documentation from Python code.
+Generate simple documentation from Python code. Should probably be in its own
+repo.
