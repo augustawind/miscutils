@@ -80,7 +80,7 @@ class TestEnvParser:
     def test_flat(self):
         opts = EnvParser(
             foo=Param(bool), bar=Param(int), baz=Param(str, default="quux")
-        ).register("var", [])
+        ).register("var")
         env = dict(VAR_FOO="True", VAR_BAR="8")
         ns = opts.read(env)
 
@@ -96,7 +96,7 @@ class TestEnvParser:
                 baz=Param(str, default="jazzz"),
                 biff=EnvParser(quux=Param(float)),
             ),
-        ).register("app", [])
+        ).register("app")
         env = dict(APP_FOO="1", APP_NESTED_BAR="8", APP_NESTED_BIFF_QUUX="3.2")
         ns = opts.read(env)
 

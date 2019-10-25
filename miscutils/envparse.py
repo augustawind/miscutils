@@ -188,7 +188,7 @@ class EnvParser:
                     meditation=Param(bool),
                     fighting=Param(bool),
                 ),
-            ).register('player', [])
+            ).register('player')
         >>> env = dict(
                 PLAYER_NAME='Foo',
                 PLAYER_SKILLS_MEDITATION='true',
@@ -211,7 +211,9 @@ class EnvParser:
         self.name = None
         self.breadcrumbs = []
 
-    def register(self, name: str, breadcrumbs: Iterable[str]) -> "EnvParser":
+    def register(
+        self, name: str, breadcrumbs: Iterable[str] = None
+    ) -> "EnvParser":
         self.name = name
         self.breadcrumbs = [] if breadcrumbs is None else breadcrumbs
 
