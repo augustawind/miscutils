@@ -1,6 +1,6 @@
 .PHONY: test
 test:
-	python -m pytest $(if $DEBUG,-s) $(if $V,-vv)
+	python -m pytest $(if $DEBUG,-s) $(if $V,-vv) $(ARGS)
 
 .PHONY: docs
 docs:
