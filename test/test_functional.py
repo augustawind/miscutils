@@ -6,10 +6,6 @@ from miscutils import functional as fx
 class TestCurried:
 
     @staticmethod
-    def f_kwonly(x, y, a=3, b=False, *, c='foo', d=-0.5):
-        return x, y, a, b, c, d
-
-    @staticmethod
     def f_ret_curried(x: int) -> fx.Curried[Tuple[int, int]]:
         return fx.Curried(lambda y: (x, y))
 
@@ -55,3 +51,20 @@ class TestCurried:
         fbc1 = fbc(1)
         assert fbc1 == fx.Curried(func, 1, a=5, b=True)
         assert fbc1(2) == (1, 2, 5, True)
+
+    def test_kwonly(self):
+        def func(x, y, a=3, b=False, *, c='foo', d=-0.5):
+            return x, y, a, b, c, d
+
+        f = fx.Curried(func)
+        assert f() == fx.Curried(func)
+        f1 = f(1)
+        assert f1 == fx.Curried(func, 1)
+        assert f1(2) == (1, 2, 3, False, 'foo', -0.5)
+        assert f1(2, a=5) == (1, 2, 5, False, 'foo', -0.5)
+        assert f1(2, c='bar') == (1, 2, 3, False, 'bar', -0.5)
+        assert f1(2, c='bar', d=-1.5) == (1, 2, 3, False, 'bar', -1.5)
+
+        f1c = f1(c='bar')
+        assert f1c == fx.Curried(func, 1, c='bar')
+        assert f1c(2) == (1, 2, 3, False, 'bar', -0.5)

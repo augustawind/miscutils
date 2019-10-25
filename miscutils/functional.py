@@ -25,7 +25,7 @@ class Curried(Generic[R]):
     def __init__(self, f: Callable[..., R], *args: Any, **kwargs: Any):
         self._f = f
         argnames = f.__code__.co_varnames
-        nkwargs = len(f.__defaults__) if f.__defaults__ else 0
+        nkwargs = (len(f.__defaults__ or ())) + f.__code__.co_kwonlyargcount
         self._argnames = argnames[:len(argnames) - nkwargs]
         self._args_map = dict.fromkeys(self._argnames, DEFAULT)
         self._kwargs = {}
