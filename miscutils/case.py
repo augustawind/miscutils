@@ -8,17 +8,33 @@ from .classproperty import classproperty
 class CaseStyle:
     """An abstract base class for strings in specific case styles.
 
-    Two sets of attributes/methods must be defined on child classes to be
-    complete:
+    There are two sets of attributes & methods that can be overridden on
+    child classes to define behavior:
 
-    - Either ``WORD_PATTERN``; or ``parse``.
-    - Either ``JOIN_BY`` and ``fmt_word``; or ``fmt``.
+    - For parsing from a string:
+      - **Must** define either ``WORD_PATTERN`` or ``parse``.
+    - For converting into a string:
+      - **Must** define either ``JOIN_BY`` + ``fmt_word`` or ``fmt``
+      - ``fmt_word`` is not actually required, but by default it just returns
+        its input. To customize output you will probably want to define
+        ``fmt_word`` as well as ``JOIN_BY``.
+    - Define ``fmt_1st_word`` if you defined ``fmt_word`` but you need the first
+      word to be formatted differently than the rest. By default all words are
+      formatted using ``fmt_word``.
     """
 
     def __init__(self, s: str):
         self._words = self.parse(s)
         assert len(self._words) > 0, \
             f'could not parse str as case {self.__class__.__name__}'
+
+    def __str__(self):
+        """Return a string representation of this ``CaseStyle``.
+
+        You shouldn't need to override this. To customize display, override
+        ``CaseStyle.fmt`` instead.
+        """
+        return self.fmt(self.words)
 
     @classproperty
     def WORD_PATTERN(cls) -> re.Pattern:
@@ -34,6 +50,16 @@ class CaseStyle:
         """
         raise NotImplementedError
 
+    def parse(self, s: str):
+        """Parse a string in this ``CaseStyle`` into a list of words.
+
+        By default this uses ``self.WORD_PATTERN.findall`` to do this, so
+        child classes must either define ``CaseStyle.WORD_PATTERN`` or
+        override this method directly. In most cases, defining `WORD_PATTERN`
+        should be enough.
+        """
+        return self.WORD_PATTERN.findall(s)
+
     @classproperty
     def JOIN_BY(cls) -> str:
         """The `str` that separates words in this ``CaseStyle``.
@@ -48,40 +74,27 @@ class CaseStyle:
         """
         raise NotImplementedError
 
-    @property
-    def words(self) -> List[str]:
-        """Return a copy of the list of words parsed by this ``CaseStyle``."""
-        return self._words.copy()
-
-    def to_case(self, case: 'CaseStyle') -> 'CaseStyle':
-        """Convert this ``CaseStyle`` instance into another ``CaseStyle``."""
-        return case(case.fmt(self.words))
-
-    def __str__(self):
-        """Return a string representation of this CaseStyle.
-
-        You shouldn't override this. To customize how this ``CaseStyle`` is
-        displayed, override ``CaseStyle.fmt`` instead.
-        """
-        return self.fmt(self.words)
-
-    def parse(self, s: str):
-        """Parse a string in this CaseStyle into a list of words.
-
-        By default this uses ``re.Pattern``'s `findall` method on
-        ``CaseStyle.WORD_PATTERN``, which is a ``re.Pattern`` instance. For
-        custom behavior just override this method instead of `WORD_PATTERN`.
-        """
-        return self.WORD_PATTERN.findall(s)
-
     @classmethod
-    def fmt_1st_word(cls, word: str) -> str:
-        """Convert a word into this case as the first word in the sequence.
+    def fmt(cls, words: List[str]) -> str:
+        """Convert a list of words into a single string in this case style.
 
-        By default this just calls ``cls.fmt_word``, but it may be overridden
-        if the first word should be formatted differently than the others.
+        By default this formats each word in ``words`` with
+        ``cls.fmt_word``/``cls.fmt_1st_word`` and joins them with
+        ``cls.JOIN_BY.join``. Child classes must define ``cls.JOIN_BY`` or
+        override this method directly.
+
+        Most child classes will probably want to override ``cls.fmt_word`` as
+        well since the default just returns the word. If you need the first
+        word to be formatted different from the rest, you can define
+        ``cls.fmt_1st_word`` as well. If that still isn't sufficient you can
+        just override this method.
         """
-        return cls.fmt_word(word)
+        return cls.JOIN_BY.join(
+            (
+                cls.fmt_1st_word(words[0]),
+                *(cls.fmt_word(word) for word in words[1:])
+            )
+        )
 
     @classmethod
     def fmt_word(cls, word: str) -> str:
@@ -95,21 +108,22 @@ class CaseStyle:
         return word
 
     @classmethod
-    def fmt(cls, words: List[str]) -> str:
-        """Convert a list of words into a single string in this case style.
+    def fmt_1st_word(cls, word: str) -> str:
+        """Convert a word into this case as the first word in the sequence.
 
-        By default this formats each word in ``words`` with ``cls.fmt_word``
-        and joins them with ``cls.JOIN_BY``. In most cases, defining
-        those two attributes is simpler and provides sufficient customization
-        for how this ``CaseStyle`` is displayed, but if you need more control
-        you can just customize this method.
+        By default this just calls ``cls.fmt_word``, but it may be overridden
+        if the first word should be formatted differently than the others.
         """
-        return cls.JOIN_BY.join(
-            (
-                cls.fmt_1st_word(words[0]),
-                *(cls.fmt_word(word) for word in words[1:])
-            )
-        )
+        return cls.fmt_word(word)
+
+    @property
+    def words(self) -> List[str]:
+        """Return a copy of the list of words parsed by this ``CaseStyle``."""
+        return self._words.copy()
+
+    def to_case(self, case: 'CaseStyle') -> 'CaseStyle':
+        """Convert this ``CaseStyle`` instance into another ``CaseStyle``."""
+        return case(case.fmt(self.words))
 
 
 class CamelCase(CaseStyle):
