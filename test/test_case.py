@@ -4,12 +4,14 @@ from miscutils import case as c
 class TestCaseConversions:
 
     data = {
-        c.CamelCase: ('foo', 'fooBar', 'xFoo', 'fooX', 'fooXBar',
-                      'foo3', 'foo3Bar'),
-        c.SnakeCase: ('foo', 'foo_bar', 'x_foo', 'foo_x', 'foo_x_bar',
-                      'foo3', 'foo3_bar'),
-        c.KebabCase: ('foo', 'foo-bar', 'x-foo', 'foo-x', 'foo-x-bar',
-                      'foo3', 'foo3-bar'),
+        c.PascalCase: ('Foo', 'FooBar', 'XFoo', 'FooX', 'FooXBar', 'Foo3',
+                       'Foo3Bar'),
+        c.CamelCase: ('foo', 'fooBar', 'xFoo', 'fooX', 'fooXBar', 'foo3',
+                      'foo3Bar'),
+        c.SnakeCase: ('foo', 'foo_bar', 'x_foo', 'foo_x', 'foo_x_bar', 'foo3',
+                      'foo3_bar'),
+        c.KebabCase: ('foo', 'foo-bar', 'x-foo', 'foo-x', 'foo-x-bar', 'foo3',
+                      'foo3-bar'),
     }
 
     formats = ('{}', '_{}', '__{}')

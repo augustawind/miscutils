@@ -54,7 +54,7 @@ class CaseStyle:
         """
         raise NotImplementedError
 
-    def parse(self, s: str):
+    def parse(self, s: str) -> List[str]:
         """Parse a string in this ``CaseStyle`` into a list of words.
 
         By default this uses ``self.WORD_PATTERN.findall`` to do this, so
@@ -62,7 +62,10 @@ class CaseStyle:
         override this method directly. In most cases, defining `WORD_PATTERN`
         should be enough.
         """
-        return self.WORD_PATTERN.findall(s)
+        return [
+            ''.join(filter(bool, matches))
+            for matches in self.WORD_PATTERN.findall(s)
+        ]
 
     @classproperty
     def JOIN_BY(cls) -> str:
@@ -130,10 +133,33 @@ class CaseStyle:
         return case(case.fmt(self.words))
 
 
-class CamelCase(CaseStyle):
-    """Represents a str in _CamelCase_."""
+class PascalCase(CaseStyle):
+    """Represents a str in _PascalCase_."""
 
-    WORD_PATTERN = re.compile(r'(?:\A[a-z_]|[A-Z_])[a-z0-9_]*')
+    WORD_PATTERN = re.compile(
+        r"""
+        (_* [A-Z] [a-z0-9_]*)
+        """,
+        re.VERBOSE,
+    )
+    JOIN_BY = ''
+
+    @classmethod
+    def fmt_word(cls, word):
+        return word.title()
+
+
+class CamelCase(CaseStyle):
+    """Represents a str in _camelCase_."""
+
+    WORD_PATTERN = re.compile(
+        r"""
+        \A (_* [a-z] [a-z0-9_]*)
+            |
+        ([A-Z] [a-z0-9_]*)
+        """,
+        re.VERBOSE,
+    )
     JOIN_BY = ''
 
     @classmethod
@@ -148,7 +174,14 @@ class CamelCase(CaseStyle):
 class SnakeCase(CaseStyle):
     """Represents a str in _snake_case_."""
 
-    WORD_PATTERN = re.compile(r'(?:\A|_)(_*[A-Za-z0-9]+)')
+    WORD_PATTERN = re.compile(
+        r"""
+        \A (_* [a-z] [a-z0-9]*)
+            |
+        ([a-z] [a-z0-9]*) (?:_+|\Z)
+        """,
+        re.VERBOSE,
+    )
     JOIN_BY = '_'
 
     @classmethod
@@ -159,7 +192,14 @@ class SnakeCase(CaseStyle):
 class KebabCase(CaseStyle):
     """Represents a str in _kebab-case_."""
 
-    WORD_PATTERN = re.compile(r'(?:\A|-)(-*[A-Za-z0-9_]+)')
+    WORD_PATTERN = re.compile(
+        r"""
+        \A (_* [A-Za-z] [A-Za-z0-9_]*)
+            |
+        - ([A-Za-z] [A-Za-z0-9_]*)
+        """,
+        re.VERBOSE,
+    )
     JOIN_BY = '-'
 
     @classmethod
