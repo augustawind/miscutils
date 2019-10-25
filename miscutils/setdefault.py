@@ -63,7 +63,7 @@ def setdefault(value, default, cls=None, merge_lists=False, merge_sets=False,
 
 def _setdefault_dict(value, default, depth):
     if isinstance(value, Mapping):
-        return merge(None, default, value, _depth=depth)
+        return merge({}, default, value, _depth=depth)
     return value
 
 

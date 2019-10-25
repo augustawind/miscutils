@@ -53,15 +53,15 @@ class TestMerge(MergeTestBase):
 
         yield
 
-    def test_base_none_ok(self):
+    def test_base_new_dict_ok(self):
         for args in self.args_groups:
-            assert merge(None, *args) is not self.base, \
-                f'base returned from merge(None, ...ARGS) where ARGS={ARGS}'
+            assert merge({}, *args) is not self.base, \
+                f'base returned from merge(dict(), ...ARGS) where ARGS={args}'
 
     def test_same_object_returned(self):
         for args in self.args_groups:
             assert merge(*args) is self.base, \
-                f'base not returned from merge(BASE, ..ARGS) where ARGS={ARGS}'
+                f'base not returned from merge(BASE, ..ARGS) where ARGS={args}'
 
 
 class MergeNestedTestBase(MergeTestBase):
