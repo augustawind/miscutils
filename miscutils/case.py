@@ -14,10 +14,10 @@ class CaseStyle:
     - For parsing from a string:
       - **Must** define either ``WORD_PATTERN`` or ``parse``.
     - For converting into a string:
-      - **Must** define either ``JOIN_BY`` + ``fmt_word`` or ``fmt``
+      - **Must** define either ``SEPARATOR`` + ``fmt_word`` or ``fmt``
       - ``fmt_word`` is not actually required, but by default it just returns
         its input. To customize output you will probably want to define
-        ``fmt_word`` as well as ``JOIN_BY``.
+        ``fmt_word`` as well as ``SEPARATOR``.
     - Define ``fmt_1st_word`` if you defined ``fmt_word`` but you need the
       first word to be formatted differently than the rest. By default all
       words are formatted using ``fmt_word``.
@@ -69,7 +69,7 @@ class CaseStyle:
         ]
 
     @classproperty
-    def JOIN_BY(cls) -> str:
+    def SEPARATOR(cls) -> str:
         """The `str` that separates words in this ``CaseStyle``.
 
         It is used by the default implementation for ``cls.fmt`` to join the
@@ -77,7 +77,7 @@ class CaseStyle:
         this must be defined, as a class-level attribute:
 
         >>> class SnakeCase(CaseStyle):
-        ...     JOIN_BY = '_'
+        ...     SEPARATOR = '_'
         ...     # ...snip...
         """
         raise NotImplementedError
@@ -88,7 +88,7 @@ class CaseStyle:
 
         By default this formats each word in ``words`` with
         ``cls.fmt_word``/``cls.fmt_1st_word`` and joins them with
-        ``cls.JOIN_BY.join``. Child classes must define ``cls.JOIN_BY`` or
+        ``cls.SEPARATOR.join``. Child classes must define ``cls.SEPARATOR`` or
         override this method directly.
 
         Most child classes will probably want to override ``cls.fmt_word`` as
@@ -97,7 +97,7 @@ class CaseStyle:
         ``cls.fmt_1st_word`` as well. If that still isn't sufficient you can
         just override this method.
         """
-        return cls.JOIN_BY.join(
+        return cls.SEPARATOR.join(
             (
                 cls.fmt_1st_word(words[0]),
                 *(cls.fmt_word(word) for word in words[1:]),
@@ -110,7 +110,7 @@ class CaseStyle:
 
         By default this simply returns the given `word`. The default
         implementation for ``cls.fmt`` uses this method to format each word
-        and joins them with ``cls.JOIN_BY``. Defining this method is
+        and joins them with ``cls.SEPARATOR``. Defining this method is
         the simplest way to customize how the ``CaseStyle`` is displayed.
         """
         return word
@@ -143,7 +143,7 @@ class PascalCase(CaseStyle):
         """,
         re.VERBOSE,
     )
-    JOIN_BY = ""
+    SEPARATOR = ""
 
     @classmethod
     def fmt_word(cls, word):
@@ -161,7 +161,7 @@ class CamelCase(CaseStyle):
         """,
         re.VERBOSE,
     )
-    JOIN_BY = ""
+    SEPARATOR = ""
 
     @classmethod
     def fmt_1st_word(cls, word):
@@ -183,7 +183,7 @@ class SnakeCase(CaseStyle):
         """,
         re.VERBOSE,
     )
-    JOIN_BY = "_"
+    SEPARATOR = "_"
 
     @classmethod
     def fmt_word(cls, word):
@@ -201,7 +201,7 @@ class KebabCase(CaseStyle):
         """,
         re.VERBOSE,
     )
-    JOIN_BY = "-"
+    SEPARATOR = "-"
 
     @classmethod
     def fmt_word(cls, word):

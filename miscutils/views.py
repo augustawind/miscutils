@@ -4,6 +4,7 @@ from collections.abc import Iterable, Mapping, MutableMapping
 
 class DictView(MutableMapping):
     """A DictView is a mutable reference to a subset of a Mapping's keys."""
+
     def __init__(self, obj: MutableMapping, keys: Iterable):
         self.__obj = obj
         self.__keys = set(keys)
