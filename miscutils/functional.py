@@ -4,7 +4,7 @@ from typing import Any, Callable, Generic, Tuple, TypeVar, Union
 
 from .merge import merge
 
-__all__ = ["Curried"]
+__all__ = ["curried", "CurriedFunc"]
 
 
 class F:
@@ -21,7 +21,7 @@ class DEFAULT:
 R = TypeVar("R")
 
 
-class Curried(Generic[R]):
+class CurriedFunc(Generic[R]):
     def __init__(self, f: Callable[..., R], *args: Any, **kwargs: Any):
         self._f = f
         argnames = f.__code__.co_varnames
@@ -34,7 +34,9 @@ class Curried(Generic[R]):
             self._args_map, args, kwargs
         )
 
-    def __call__(self, *args: Any, **kwargs: Any) -> Union["Curried[R]", R]:
+    def __call__(
+        self, *args: Any, **kwargs: Any
+    ) -> Union["CurriedFunc[R]", R]:
         args_map, kwargs, complete = self._apply(
             self._args_map.copy(), args, kwargs
         )
@@ -73,8 +75,11 @@ class Curried(Generic[R]):
         return args_map, kwargs, complete
 
     def __eq__(self, other):
-        return isinstance(other, Curried) and (
+        return isinstance(other, CurriedFunc) and (
             self._f,
             self._args_map,
             self._kwargs,
         ) == (other._f, other._args_map, other._kwargs)
+
+
+curried = CurriedFunc

@@ -92,7 +92,12 @@ def _setdefault_all(value, default, cls=None):
     Additional transformations:
     """
     return setdefault(
-        value, default, cls, merge_dicts=True, merge_sets=True, merge_lists=True
+        value,
+        default,
+        cls,
+        merge_dicts=True,
+        merge_sets=True,
+        merge_lists=True,
     )
 
 

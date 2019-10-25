@@ -1,6 +1,6 @@
 .PHONY: fmt
 fmt:
-	pyfmt --line-length 80
+	pyfmt --line-length 79
 
 .PHONY: test
 test:
