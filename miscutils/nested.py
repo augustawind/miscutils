@@ -49,27 +49,28 @@ from collections import OrderedDict, namedtuple
 from enum import Enum
 
 __all__ = [
-    'get', 'set', 'update', 'DataNode', 'MissingRHSOperator',
-    'MissingLHSOperator', 'UnexpectedRHSOperator', 'MissingValueChar'
+    "get",
+    "set",
+    "update",
+    "DataNode",
+    "MissingRHSOperator",
+    "MissingLHSOperator",
+    "UnexpectedRHSOperator",
+    "MissingValueChar",
 ]
 
-DataNode = namedtuple('DataNode', 'value action parent')
+DataNode = namedtuple("DataNode", "value action parent")
 
-Action = namedtuple('Action', 'item accessor')
+Action = namedtuple("Action", "item accessor")
 
-Accessor = Enum('Accessor', 'ATTR KEY INDEX')
+Accessor = Enum("Accessor", "ATTR KEY INDEX")
 
-LHS_OPS = OrderedDict((
-    ('.', Accessor.ATTR),
-    ('[', Accessor.KEY),
-    ('#', Accessor.INDEX),
-))
-RHS_OPS = OrderedDict(((Accessor.KEY, ']'), ))
+LHS_OPS = OrderedDict(
+    ((".", Accessor.ATTR), ("[", Accessor.KEY), ("#", Accessor.INDEX))
+)
+RHS_OPS = OrderedDict(((Accessor.KEY, "]"),))
 
-OP_CHARS = [
-    *LHS_OPS.keys(),
-    *RHS_OPS.values(),
-]
+OP_CHARS = [*LHS_OPS.keys(), *RHS_OPS.values()]
 
 
 def get(data, path):
@@ -175,11 +176,7 @@ def get_with_context(data, path):
         parent = data
         data = pick(data, action)
 
-    return DataNode(
-        value=data,
-        action=action,
-        parent=parent,
-    )
+    return DataNode(value=data, action=action, parent=parent)
 
 
 def pick(data, action):
@@ -190,8 +187,9 @@ def pick(data, action):
     elif action.accessor is Accessor.INDEX:
         return data[int(action.item)]
     else:
-        raise ValueError("PROGRAM ERROR: unexpected accessor"
-                         f" `{action.accessor}`")
+        raise ValueError(
+            "PROGRAM ERROR: unexpected accessor" f" `{action.accessor}`"
+        )
 
 
 def put(data, action, value):
@@ -202,8 +200,9 @@ def put(data, action, value):
     elif action.accessor is Accessor.INDEX:
         data[int(action.item)] = value
     else:
-        raise ValueError("PROGRAM ERROR: unexpected accessor"
-                         f" `{action.accessor}`")
+        raise ValueError(
+            "PROGRAM ERROR: unexpected accessor" f" `{action.accessor}`"
+        )
 
 
 def rm(data, action):
@@ -214,15 +213,16 @@ def rm(data, action):
     elif action.accessor is Accessor.INDEX:
         del data[int(action.item)]
     else:
-        raise ValueError("PROGRAM ERROR: unexpected accessor"
-                         f" `{action.accessor}`")
+        raise ValueError(
+            "PROGRAM ERROR: unexpected accessor" f" `{action.accessor}`"
+        )
 
 
 def parse_actions(path):
     """Attempt to parse a string into actions for modifying an object."""
     actions = []
     accessor = None
-    item = ''
+    item = ""
 
     for char in path:
         # Grab the operator if this char is an lhs operator char
@@ -245,7 +245,7 @@ def parse_actions(path):
 
             # Otherwise, translate current op into action
             actions.append(Action(item, accessor))
-            item = ''
+            item = ""
 
             # If the current op expects a rhs op char...
             rhs_op_char = RHS_OPS.get(accessor)
@@ -300,17 +300,19 @@ class MissingRHSOperator(Error):
     def __init__(self, op, char):
         super().__init__(
             f"missing rhs operator: accessor started with char '{char}':"
-            f" expected rhs op char '{RHS_OPS[op]}'")
+            f" expected rhs op char '{RHS_OPS[op]}'"
+        )
 
 
 class MissingLHSOperator(Error):
 
-    lhs_ops_repr = ' , '.join(f"'{char}'" for char in LHS_OPS.keys())
+    lhs_ops_repr = " , ".join(f"'{char}'" for char in LHS_OPS.keys())
 
     def __init__(self, char):
         super().__init__(
             f"missing lhs operator: expected an lhs operator char"
-            f" but found '{char}' (must be one of: {self.lhs_ops_repr})")
+            f" but found '{char}' (must be one of: {self.lhs_ops_repr})"
+        )
 
 
 class UnexpectedRHSOperator(Error):

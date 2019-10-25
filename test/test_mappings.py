@@ -6,20 +6,18 @@ from miscutils import mappings as maps
 
 
 class MappingTest:
-
     @pytest.fixture
     def items1(self):
-        return (('a', 0), ('b', 1), ('c', 2))
+        return (("a", 0), ("b", 1), ("c", 2))
 
     @pytest.fixture
     def items2(self):
-        return (('z', 9), ('y', 8), ('x', 7))
+        return (("z", 9), ("y", 8), ("x", 7))
 
 
 class TestDictSet(MappingTest):
-
     def test_dict_basics(self):
-        items = (('a', 0), ('b', 1), ('c', 2))
+        items = (("a", 0), ("b", 1), ("c", 2))
         d = maps.DictSet(items)
 
         assert len(d) == len(items)
@@ -33,10 +31,10 @@ class TestDictSet(MappingTest):
         assert len(d) == 0
 
     def test_set_ops(self):
-        dx = maps.DictSet((('a', 0), ('b', 1), ('c', 2)))
+        dx = maps.DictSet((("a", 0), ("b", 1), ("c", 2)))
 
         # disjoint
-        assert dx.isdisjoint({'x', 'y', 'z'})
+        assert dx.isdisjoint({"x", "y", "z"})
         assert dx.isdisjoint(maps.DictSet(x=0, y=1, z=2))
         assert not dx.isdisjoint(maps.DictSet(a=5))
 
@@ -48,7 +46,7 @@ class TestDictSet(MappingTest):
         assert not dx > dxx
 
         # proper subset/superset
-        dxx['d'] = 3
+        dxx["d"] = 3
         assert dx < dxx
         assert dxx > dx
 
@@ -70,20 +68,19 @@ class TestDictSet(MappingTest):
         assert dy ^ dx == maps.DictSet(a=0, b=1, d=4)
 
     def test_copy(self):
-        ns = maps.DictSet((('a', 0), ('b', maps.DictSet(x=9)), ('c', 5)))
+        ns = maps.DictSet((("a", 0), ("b", maps.DictSet(x=9)), ("c", 5)))
         assert copy.copy(ns) == ns
         assert copy.deepcopy(ns) == ns
 
 
 class TestFrozenDict:
-
     @pytest.fixture
     def items(self):
-        return (('a', 0), ('b', 1), ('c', 2))
+        return (("a", 0), ("b", 1), ("c", 2))
 
     @pytest.fixture
     def non_items(self):
-        return (('z', 9), ('y', 8), ('x', 7))
+        return (("z", 9), ("y", 8), ("x", 7))
 
     @pytest.fixture
     def dicts(self, items):
@@ -98,7 +95,7 @@ class TestFrozenDict:
             for k, v in items:
                 assert d[k] == v
                 with pytest.raises(TypeError):
-                    d[k] = 'abc'
+                    d[k] = "abc"
                 with pytest.raises(TypeError):
                     del d[k]
 
@@ -119,30 +116,29 @@ class TestFrozenDict:
 
 
 class TestNamespace:
-
     @pytest.fixture
     def ns(self):
-        return maps.Namespace((('a', 0), ('b', 1), ('c', 2)))
+        return maps.Namespace((("a", 0), ("b", 1), ("c", 2)))
 
     def test_create(self, ns):
-        assert ns.a == ns['a'] == 0
-        assert ns.b == ns['b'] == 1
-        assert ns.c == ns['c'] == 2
-        assert set(ns.items()) == set((('a', 0), ('b', 1), ('c', 2)))
+        assert ns.a == ns["a"] == 0
+        assert ns.b == ns["b"] == 1
+        assert ns.c == ns["c"] == 2
+        assert set(ns.items()) == set((("a", 0), ("b", 1), ("c", 2)))
 
     def test_update(self, ns):
         ns.d = 3
         ns.e = 4
-        assert ns.d == ns['d'] == 3
-        assert ns.e == ns['e'] == 4
+        assert ns.d == ns["d"] == 3
+        assert ns.e == ns["e"] == 4
 
     def test_bad_lookups(self, ns):
         with pytest.raises(KeyError):
             ns.x
         with pytest.raises(KeyError):
-            ns['x']
+            ns["x"]
 
     def test_copy(self):
-        ns = maps.Namespace((('a', 0), ('b', maps.Namespace(x=9)), ('c', 5)))
+        ns = maps.Namespace((("a", 0), ("b", maps.Namespace(x=9)), ("c", 5)))
         assert copy.copy(ns) == ns
         assert copy.deepcopy(ns) == ns

@@ -8,7 +8,7 @@ def readme():
         return handle.read()
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     setup(
         name="miscutils",
         version="0.1.0",

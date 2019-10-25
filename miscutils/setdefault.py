@@ -4,8 +4,15 @@ from functools import partial
 from .merge import merge
 
 
-def setdefault(value, default, cls=None, merge_lists=False, merge_sets=False,
-               merge_dicts=False, depth=1):
+def setdefault(
+    value,
+    default,
+    cls=None,
+    merge_lists=False,
+    merge_sets=False,
+    merge_dicts=False,
+    depth=1,
+):
     """Transform ``value`` by applying some rules with ``default``.
 
     The following rules are applied:
@@ -84,8 +91,9 @@ def _setdefault_all(value, default, cls=None):
 
     Additional transformations:
     """
-    return setdefault(value, default, cls, merge_dicts=True, merge_sets=True,
-                      merge_lists=True)
+    return setdefault(
+        value, default, cls, merge_dicts=True, merge_sets=True, merge_lists=True
+    )
 
 
 setdefault.merge_all = _setdefault_all

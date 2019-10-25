@@ -18,4 +18,4 @@ def test_insert():
 
 
 def test_intersperse():
-    assert ''.join(iters.intersperse('-', 'abcd')) == 'a-b-c-d'
+    assert "".join(iters.intersperse("-", "abcd")) == "a-b-c-d"

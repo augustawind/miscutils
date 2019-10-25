@@ -25,8 +25,9 @@ class CaseStyle:
 
     def __init__(self, s: str):
         self._words = self.parse(s)
-        assert len(self._words) > 0, \
-            f'unable to parse str as {self.__class__.__name__}'
+        assert (
+            len(self._words) > 0
+        ), f"unable to parse str as {self.__class__.__name__}"
 
         self._cached__str__ = None
 
@@ -63,7 +64,7 @@ class CaseStyle:
         should be enough.
         """
         return [
-            ''.join(filter(bool, matches))
+            "".join(filter(bool, matches))
             for matches in self.WORD_PATTERN.findall(s)
         ]
 
@@ -99,7 +100,7 @@ class CaseStyle:
         return cls.JOIN_BY.join(
             (
                 cls.fmt_1st_word(words[0]),
-                *(cls.fmt_word(word) for word in words[1:])
+                *(cls.fmt_word(word) for word in words[1:]),
             )
         )
 
@@ -128,7 +129,7 @@ class CaseStyle:
         """Return a copy of the list of words parsed by this ``CaseStyle``."""
         return self._words.copy()
 
-    def to_case(self, case: 'CaseStyle') -> 'CaseStyle':
+    def to_case(self, case: "CaseStyle") -> "CaseStyle":
         """Convert this ``CaseStyle`` instance into another ``CaseStyle``."""
         return case(case.fmt(self.words))
 
@@ -142,7 +143,7 @@ class PascalCase(CaseStyle):
         """,
         re.VERBOSE,
     )
-    JOIN_BY = ''
+    JOIN_BY = ""
 
     @classmethod
     def fmt_word(cls, word):
@@ -160,7 +161,7 @@ class CamelCase(CaseStyle):
         """,
         re.VERBOSE,
     )
-    JOIN_BY = ''
+    JOIN_BY = ""
 
     @classmethod
     def fmt_1st_word(cls, word):
@@ -182,7 +183,7 @@ class SnakeCase(CaseStyle):
         """,
         re.VERBOSE,
     )
-    JOIN_BY = '_'
+    JOIN_BY = "_"
 
     @classmethod
     def fmt_word(cls, word):
@@ -200,7 +201,7 @@ class KebabCase(CaseStyle):
         """,
         re.VERBOSE,
     )
-    JOIN_BY = '-'
+    JOIN_BY = "-"
 
     @classmethod
     def fmt_word(cls, word):

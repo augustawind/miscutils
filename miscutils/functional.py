@@ -4,7 +4,7 @@ from typing import Any, Callable, Generic, Tuple, TypeVar, Union
 
 from .merge import merge
 
-__all__ = ['Curried']
+__all__ = ["Curried"]
 
 
 class F:
@@ -18,7 +18,7 @@ class DEFAULT:
     """Non-None default value."""
 
 
-R = TypeVar('R')
+R = TypeVar("R")
 
 
 class Curried(Generic[R]):
@@ -26,7 +26,7 @@ class Curried(Generic[R]):
         self._f = f
         argnames = f.__code__.co_varnames
         nkwargs = (len(f.__defaults__ or ())) + f.__code__.co_kwonlyargcount
-        self._argnames = argnames[:len(argnames) - nkwargs]
+        self._argnames = argnames[: len(argnames) - nkwargs]
         self._args_map = dict.fromkeys(self._argnames, DEFAULT)
         self._kwargs = {}
 
@@ -34,7 +34,7 @@ class Curried(Generic[R]):
             self._args_map, args, kwargs
         )
 
-    def __call__(self, *args: Any, **kwargs: Any) -> Union['Curried[R]', R]:
+    def __call__(self, *args: Any, **kwargs: Any) -> Union["Curried[R]", R]:
         args_map, kwargs, complete = self._apply(
             self._args_map.copy(), args, kwargs
         )
@@ -48,10 +48,7 @@ class Curried(Generic[R]):
         return next_f
 
     def _apply(
-        self,
-        args_map: dict,
-        args: tuple,
-        kwargs: dict,
+        self, args_map: dict, args: tuple, kwargs: dict
     ) -> Tuple[dict, dict, bool]:
         # Populate positional args from `kwargs`, if any
         del_keys = []

@@ -3,7 +3,7 @@ def split(i, seq):
 
 
 def inits(seq):
-    return (seq[:i + 1] for i in range(len(seq)))
+    return (seq[: i + 1] for i in range(len(seq)))
 
 
 def tails(seq):

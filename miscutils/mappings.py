@@ -27,7 +27,7 @@ class DictSet(MutableMapping, Set):
         self.__dict = dict(*args, **kwargs)
 
     def __str__(self):
-        return f'{self.__class__.__name__}({self.__dict})'
+        return f"{self.__class__.__name__}({self.__dict})"
 
     def update(self, *args, **kwargs):
         self.__dict.update(*args, **kwargs)

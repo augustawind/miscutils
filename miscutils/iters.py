@@ -18,7 +18,7 @@ def insert(i, item, iterable):
 
 
 def intersperse(item, iterable):
-    if not hasattr(iterable, '__next__'):
+    if not hasattr(iterable, "__next__"):
         iterable = iter(iterable)
     yield next(iterable)
 

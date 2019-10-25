@@ -2,7 +2,6 @@ from miscutils import functional as fx
 
 
 class TestCurried:
-
     def test_args(self):
         def func(x, y):
             return x, y
@@ -18,15 +17,15 @@ class TestCurried:
         assert fy(1) == (1, 2)
 
     def test_kws(self):
-        def func(a=3, b=False, c='foo'):
+        def func(a=3, b=False, c="foo"):
             return a, b, c
 
         f = fx.Curried(func)
-        assert f() == (3, False, 'foo')
-        assert f(a=5) == (5, False, 'foo')
-        assert f(a=5, b=True) == (5, True, 'foo')
-        assert f(c='bar') == (3, False, 'bar')
-        assert f(a=5, c='bar') == (5, False, 'bar')
+        assert f() == (3, False, "foo")
+        assert f(a=5) == (5, False, "foo")
+        assert f(a=5, b=True) == (5, True, "foo")
+        assert f(c="bar") == (3, False, "bar")
+        assert f(a=5, c="bar") == (5, False, "bar")
 
     def test_args_kws(self):
         def func(x, y, a=3, b=False):
@@ -47,18 +46,18 @@ class TestCurried:
         assert fbc1(2) == (1, 2, 5, True)
 
     def test_kwonly(self):
-        def func(x, y, a=3, b=False, *, c='foo', d=-0.5):
+        def func(x, y, a=3, b=False, *, c="foo", d=-0.5):
             return x, y, a, b, c, d
 
         f = fx.Curried(func)
         assert f() == fx.Curried(func)
         f1 = f(1)
         assert f1 == fx.Curried(func, 1)
-        assert f1(2) == (1, 2, 3, False, 'foo', -0.5)
-        assert f1(2, a=5) == (1, 2, 5, False, 'foo', -0.5)
-        assert f1(2, c='bar') == (1, 2, 3, False, 'bar', -0.5)
-        assert f1(2, c='bar', d=-1.5) == (1, 2, 3, False, 'bar', -1.5)
+        assert f1(2) == (1, 2, 3, False, "foo", -0.5)
+        assert f1(2, a=5) == (1, 2, 5, False, "foo", -0.5)
+        assert f1(2, c="bar") == (1, 2, 3, False, "bar", -0.5)
+        assert f1(2, c="bar", d=-1.5) == (1, 2, 3, False, "bar", -1.5)
 
-        f1c = f1(c='bar')
-        assert f1c == fx.Curried(func, 1, c='bar')
-        assert f1c(2) == (1, 2, 3, False, 'bar', -0.5)
+        f1c = f1(c="bar")
+        assert f1c == fx.Curried(func, 1, c="bar")
+        assert f1c(2) == (1, 2, 3, False, "bar", -0.5)
