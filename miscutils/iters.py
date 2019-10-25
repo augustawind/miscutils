@@ -1,4 +1,4 @@
-from itertools import *
+from itertools import islice
 
 
 def cons(item, iterable):

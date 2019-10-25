@@ -1,5 +1,5 @@
 import itertools
-from collections import Mapping
+from collections.abc import Mapping
 
 
 def merge(base, *args, _depth=0, **kwargs):
@@ -13,7 +13,7 @@ def merge(base, *args, _depth=0, **kwargs):
         base (Mapping): The base mapping.
         *args: Additional mappings.
         _depth (int): The depth to merge nested dicts.
-        **kwargs: Key/value paids.
+        **kwargs: Key/value pairs.
 
     Returns:
         The ``base`` mapping. If it was None, the newly created mapping is
