@@ -7,13 +7,6 @@ from .merge import merge
 __all__ = ["curried"]
 
 
-class F:
-    """Function wrapper that adds functional programming features."""
-
-    def __init__(self, f: callable):
-        self.f = f
-
-
 class _DEFAULT:
     """Non-None default value."""
 
