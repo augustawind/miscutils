@@ -2,12 +2,71 @@
 from collections.abc import Iterable, Mapping, MutableMapping, MutableSet
 
 
+class DictView(MutableMapping):
+    """A slice of a dict that allows mutable access to a subset of its keys."""
+
+    def __init__(self, obj: MutableMapping, keys: Iterable):
+        self.__obj = obj
+        self.__keys = set(keys)
+
+    def __str__(self):
+        return f"{type(self).__name__}({dict((k, self.__obj[k]) for k in self.__keys)})"
+
+    __repr__ = __str__
+
+    def __iter__(self):
+        for key in self.__keys:
+            if key in self.__obj:
+                yield key
+            else:
+                self.__keys.remove(key)
+
+    def __len__(self):
+        return len(tuple(iter(self)))
+
+    def __getitem__(self, key):
+        if key not in self.__keys:
+            raise KeyError(key)
+        return self.__obj[key]
+
+    def __setitem__(self, key, value):
+        self.__obj[key] = value
+        self.__keys.add(key)
+
+    def __delitem__(self, key):
+        if key not in self.__keys:
+            raise KeyError(key)
+        del self.__obj[key]
+        self.__keys.remove(key)
+
+    def keys(self):
+        return iter(self)
+
+    def values(self):
+        for key in self:
+            yield self.__obj[key]
+
+    def items(self):
+        for key in self:
+            yield (key, self.__obj[key])
+
+    def __eq__(self, other):
+        return isinstance(other, Mapping) and dict(self.items()) == dict(
+            other.items()
+        )
+
+
 class SetView(MutableSet):
     """A slice of a set that allows mutable access to a subset of its items."""
 
     def __init__(self, obj: MutableSet, values: Iterable):
         self.__obj = obj
         self.__values = set(values)
+
+    def __str__(self):
+        return f"{type(self).__name__}({self.__values})"
+
+    __repr__ = __str__
 
     def _from_iterable(self, it):
         return SetView(it, self.__values)
@@ -50,6 +109,7 @@ class SetView(MutableSet):
 
     def __ior__(self, other):
         self.__values |= other
+        self.__values &= self.__obj
         return self
 
     def __iand__(self, other):
@@ -58,57 +118,12 @@ class SetView(MutableSet):
 
     def __ixor__(self, other):
         self.__values ^= other
+        self.__values &= self.__obj
         return self
 
     def __isub__(self, other):
         self.__values -= other
         return self
 
-
-class DictView(MutableMapping):
-    """A slice of a dict that allows mutable access to a subset of its keys."""
-
-    def __init__(self, obj: MutableMapping, keys: Iterable):
-        self.__obj = obj
-        self.__keys = set(keys)
-
-    def __iter__(self):
-        for key in self.__keys:
-            if key in self.__obj:
-                yield key
-            else:
-                self.__keys.remove(key)
-
-    def __len__(self):
-        return len(tuple(iter(self)))
-
-    def __getitem__(self, key):
-        if key not in self.__keys:
-            raise KeyError(key)
-        return self.__obj[key]
-
-    def __setitem__(self, key, value):
-        self.__obj[key] = value
-        self.__keys.add(key)
-
-    def __delitem__(self, key):
-        if key not in self.__keys:
-            raise KeyError(key)
-        del self.__obj[key]
-        self.__keys.remove(key)
-
-    def keys(self):
-        return iter(self)
-
-    def values(self):
-        for key in self:
-            yield self.__obj[key]
-
-    def items(self):
-        for key in self:
-            yield (key, self.__obj[key])
-
     def __eq__(self, other):
-        return isinstance(other, Mapping) and dict(self.items()) == dict(
-            other.items()
-        )
+        return self.__values == other
