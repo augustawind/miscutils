@@ -66,8 +66,6 @@ class TestMerge(MergeTestBase):
         self.result_kwargs = {"x": 1, "y": 2, "z": 9, "a": 5}
         self.result_args_1_kwargs = {"x": 1, "y": 4, "z": 9, "a": 5}
 
-        yield
-
     def test_base_new_dict_ok(self):
         for args in self.args_groups:
             assert (
@@ -90,11 +88,10 @@ class MergeNestedTestBase(MergeTestBase):
 
 
 class TestMergeNestedLimit0(MergeNestedTestBase):
-    depth = 0
-
     @pytest.fixture(autouse=True)
     def setup(self):
         super().setup()
+        self.depth = 0
         self.result_args_1 = {"x": 11, "y": 2, "z": {"b": {"b": {"c": 13}}}}
         self.result_args_2 = {
             "x": 11,
@@ -114,15 +111,13 @@ class TestMergeNestedLimit0(MergeNestedTestBase):
             "z": {"b": {"b": {"b": 18}}},
             "a": 19,
         }
-        yield
 
 
 class TestMergeNestedUnlimited(MergeNestedTestBase):
-    depth = -1
-
     @pytest.fixture(autouse=True)
     def setup(self):
         super().setup()
+        self.depth = -1
         self.result_args_1 = {
             "x": 11,
             "y": 2,
@@ -146,4 +141,3 @@ class TestMergeNestedUnlimited(MergeNestedTestBase):
             "z": {"a": 9, "b": {"b": {"b": 18, "c": 13}}, "c": 7},
             "a": 19,
         }
-        yield
