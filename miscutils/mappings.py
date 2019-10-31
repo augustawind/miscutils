@@ -168,4 +168,4 @@ class FrozenNamespace(FrozenDict):
     """A ``FrozenDict`` that supports dot-access of its keys."""
 
     def __getattr__(self, attr):
-        return self.__dict[attr]
+        return self[attr]
