@@ -62,8 +62,6 @@ class TestSetDefaultSimple(SetDefaultTestBase):
         self.setdefault_kwargs = {}
         self.calculated_value = self.value
 
-        yield
-
 
 class TestSetDefaultMergeDicts(SetDefaultTestBase):
     @pytest.fixture(autouse=True)
@@ -77,8 +75,6 @@ class TestSetDefaultMergeDicts(SetDefaultTestBase):
         self.setdefault_kwargs = {"merge_dicts": True}
         self.calculated_value = merge(self.default, self.value, _depth=-1)
 
-        yield
-
 
 class TestSetDefaultMergeSets(SetDefaultTestBase):
     @pytest.fixture(autouse=True)
@@ -91,8 +87,6 @@ class TestSetDefaultMergeSets(SetDefaultTestBase):
         self.func = setdefault.merge_sets
         self.setdefault_kwargs = {"merge_sets": True}
         self.calculated_value = frozenset(("a", "b", "c", "d"))
-
-        yield
 
 
 class TestSetDefaultMergeLists(SetDefaultTestBase):

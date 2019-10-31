@@ -1,3 +1,4 @@
+"""merge - deeply merge mappings"""
 import itertools
 from collections.abc import Mapping
 

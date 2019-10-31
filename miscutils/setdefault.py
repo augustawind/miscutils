@@ -63,7 +63,7 @@ def setdefault(
 
     if cls:
         return cls(value)
-    elif value_cls:
+    if value_cls:
         return value_cls(value)
     return value
 
