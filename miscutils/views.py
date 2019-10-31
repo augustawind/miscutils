@@ -68,9 +68,6 @@ class SetView(MutableSet):
 
     __repr__ = __str__
 
-    def _from_iterable(self, it, values=None):
-        return SetView(it, self.__values if values is None else values)
-
     def __contains__(self, item):
         return item in self.__values
 
