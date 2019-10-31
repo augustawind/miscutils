@@ -1,5 +1,5 @@
 """views - mutable slices of compound data types"""
-from collections.abc import Iterable, Mapping, MutableMapping, MutableSet
+from collections.abc import Iterable, Mapping, MutableMapping, MutableSet, Set
 
 
 class DictView(MutableMapping):
@@ -68,8 +68,8 @@ class SetView(MutableSet):
 
     __repr__ = __str__
 
-    def _from_iterable(self, it):
-        return SetView(it, self.__values)
+    def _from_iterable(self, it, values=None):
+        return SetView(it, self.__values if values is None else values)
 
     def __contains__(self, item):
         return item in self.__values
@@ -106,6 +106,58 @@ class SetView(MutableSet):
         item = self.__values.pop()
         self.__obj.discard(item)
         return item
+
+    def __or__(self, other):
+        if not isinstance(other, Iterable):
+            return NotImplemented
+        values = (
+            e for s in (self.__values, other) for e in s if e in self.__obj
+        )
+        return SetView(self.__obj, values)
+
+    __ror__ = __or__
+
+    def __and__(self, other):
+        if not isinstance(other, Iterable):
+            return NotImplemented
+        values = (value for value in other if value in self.__obj)
+        return SetView(self.__obj, values)
+
+    __rand__ = __and__
+
+    def __sub__(self, other):
+        if not isinstance(other, Set):
+            if not isinstance(other, Iterable):
+                return NotImplemented
+            other = set(other)
+        values = (value for value in self.__values if value not in other)
+        return SetView(self.__obj, values)
+
+    def __rsub__(self, other):
+        if not isinstance(other, Set):
+            if not isinstance(other, Iterable):
+                return NotImplemented
+            other = set(other)
+        values = (
+            value
+            for value in other
+            if value not in self.__values and value in self.__obj
+        )
+        return SetView(self.__obj, values)
+
+    def __xor__(self, other):
+        if not isinstance(other, Set):
+            if not isinstance(other, Iterable):
+                return NotImplemented
+            other = set(other)
+        return (self - other) | (other - self)
+
+    def __rxor__(self, other):
+        if not isinstance(other, Set):
+            if not isinstance(other, Iterable):
+                return NotImplemented
+            other = set(other)
+        return (other - self) | (self - other)
 
     def __ior__(self, other):
         self.__values |= other
