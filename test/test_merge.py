@@ -21,24 +21,32 @@ class MergeTestBase:
     result_args_1_kwargs = NotImplemented
 
     def test_args_1(self):
-        assert self.result_args_1 == merge(
-            self.base, self.dict1, _depth=self.depth
+        assert (
+            merge(self.base, self.dict1, _depth=self.depth)
+            == self.result_args_1
         )
+        assert self.base == self.result_args_1
 
     def test_args_2(self):
-        assert self.result_args_2 == merge(
-            self.base, self.dict1, self.dict2, _depth=self.depth
+        assert (
+            merge(self.base, self.dict1, self.dict2, _depth=self.depth)
+            == self.result_args_2
         )
+        assert self.base == self.result_args_2
 
     def test_kwargs(self):
-        assert self.result_kwargs == merge(
-            self.base, _depth=self.depth, **self.kwargs
+        assert (
+            merge(self.base, _depth=self.depth, **self.kwargs)
+            == self.result_kwargs
         )
+        assert self.base == self.result_kwargs
 
     def test_args_1_kwargs(self):
-        assert self.result_args_1_kwargs == merge(
-            self.base, self.dict1, _depth=self.depth, **self.kwargs
+        assert (
+            merge(self.base, self.dict1, _depth=self.depth, **self.kwargs)
+            == self.result_args_1_kwargs
         )
+        assert self.base == self.result_args_1_kwargs
 
 
 class TestMerge(MergeTestBase):

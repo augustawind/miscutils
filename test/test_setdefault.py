@@ -31,10 +31,12 @@ class SetDefaultTestBase:
             self.value, self.default, cls=self.cls_builtin
         ) == self.cls_builtin(self.calculated_value)
 
-    def test_one_value_with_cls(self):
+    def test_none_value_with_cls(self):
         assert self.func(
-            None, self.value, cls=self.cls_builtin
-        ) == self.cls_builtin(self.value)
+            None, self.default, cls=self.cls_builtin
+        ) == self.cls_builtin(self.default)
+
+    def test_none_default_with_cls(self):
         assert self.func(
             self.value, None, cls=self.cls_builtin
         ) == self.cls_builtin(self.value)
