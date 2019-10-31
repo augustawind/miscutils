@@ -1,7 +1,10 @@
 import pytest
 
-from miscutils import seq
 from miscutils.merge import merge
+
+
+def inits(seq):
+    return (seq[: i + 1] for i in range(len(seq)))
 
 
 class MergeTestBase:
@@ -46,7 +49,7 @@ class TestMerge(MergeTestBase):
         self.dict2 = {"x": 8, "z": 5, "a": 11}
         self.kwargs = {"z": 9, "a": 5}
 
-        self.args_groups = seq.inits(
+        self.args_groups = inits(
             (self.base, self.dict1, self.dict2, self.kwargs)
         )
 
