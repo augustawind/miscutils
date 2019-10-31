@@ -1,5 +1,40 @@
 """views - mutable slices of compound data types"""
-from collections.abc import Iterable, Mapping, MutableMapping
+from collections.abc import Iterable, Mapping, MutableMapping, MutableSet, Set
+
+
+class SetView(MutableSet):
+    def __init__(self, obj: Iterable, values: Iterable):
+        self.__obj = set(obj)
+        self.__values = set(values)
+
+    def _from_iterable(self, it):
+        return SetView(it, self.__values)
+
+    def __contains__(self, item):
+        return item in self.__values
+
+    def __iter__(self):
+        for item in self.__values:
+            if item in self.__obj:
+                yield item
+            else:
+                self.__values.discard(item)
+
+    def __len__(self):
+        return len(tuple(iter(self)))
+
+    def add(self, value):
+        self.__obj.add(value)
+        self.__values.add(value)
+
+    def discard(self, value):
+        if value in self.__values:
+            self.__obj.discard(value)
+            self.__values.remove(value)
+
+    def clear(self):
+        self.__obj -= self.__values
+        self.__values.clear()
 
 
 class DictView(MutableMapping):
@@ -25,9 +60,8 @@ class DictView(MutableMapping):
         return self.__obj[key]
 
     def __setitem__(self, key, value):
-        if key not in self.__keys:
-            raise KeyError(key)
         self.__obj[key] = value
+        self.__keys.add(key)
 
     def __delitem__(self, key):
         if key not in self.__keys:
