@@ -14,7 +14,7 @@ class F:
         self.f = f
 
 
-class DEFAULT:
+class _DEFAULT:
     """Non-None default value."""
 
 
@@ -52,7 +52,7 @@ class curried(Generic[R]):
         argnames = f.__code__.co_varnames
         nkwargs = (len(f.__defaults__ or ())) + f.__code__.co_kwonlyargcount
         self._argnames = argnames[: len(argnames) - nkwargs]
-        self._args_map = dict.fromkeys(self._argnames, DEFAULT)
+        self._args_map = dict.fromkeys(self._argnames, _DEFAULT)
         self._kwargs = {}
 
         self._args_map, self._kwargs, _ = self.__add_arguments(
@@ -94,12 +94,12 @@ class curried(Generic[R]):
         # Populate positional args from `args`
         for arg in args:
             for key in self._argnames:
-                if args_map[key] is DEFAULT:
+                if args_map[key] is _DEFAULT:
                     args_map[key] = arg
                     break
 
         # Populate keyword args from remaining `kwargs`
         kwargs = merge({}, self._kwargs, kwargs, _depth=0)
 
-        complete = all(arg is not DEFAULT for arg in args_map.values())
+        complete = all(arg is not _DEFAULT for arg in args_map.values())
         return args_map, kwargs, complete
