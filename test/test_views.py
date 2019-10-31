@@ -92,6 +92,25 @@ class TestSetView:
         assert copy.copy(sview) == sview
         assert copy.deepcopy(sview) == sview
 
+    def test_contains(self, s, sview):
+        assert "foo" in sview
+        assert "baz" in sview
+        assert "bar" not in sview
+        assert "quux" not in sview
+
+    def test_add_rm(self, s, sview):
+        sview.add("biff")
+        assert "biff" in s
+        sview.remove("biff")
+        assert "biff" not in s
+        sview.remove("foo")
+        assert "foo" not in s
+        with pytest.raises(KeyError):
+            sview.remove("bar")
+        assert s == {"bar", "baz", "quux"}
+        sview.clear()
+        assert s == {"bar", "quux"}
+
     def test_set_ops(self, s, sview: SetView):
         # disjoint
         assert sview.isdisjoint({"bah", "bum"})
