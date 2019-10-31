@@ -1,10 +1,12 @@
 """views - mutable slices of compound data types"""
-from collections.abc import Iterable, Mapping, MutableMapping, MutableSet, Set
+from collections.abc import Iterable, Mapping, MutableMapping, MutableSet
 
 
 class SetView(MutableSet):
-    def __init__(self, obj: Iterable, values: Iterable):
-        self.__obj = set(obj)
+    """A slice of a set that allows mutable access to a subset of its items."""
+
+    def __init__(self, obj: MutableSet, values: Iterable):
+        self.__obj = obj
         self.__values = set(values)
 
     def _from_iterable(self, it):
@@ -28,17 +30,43 @@ class SetView(MutableSet):
         self.__values.add(value)
 
     def discard(self, value):
-        if value in self.__values:
-            self.__obj.discard(value)
-            self.__values.remove(value)
+        try:
+            self.remove(value)
+        except KeyError:
+            pass
+
+    def remove(self, value):
+        self.__values.remove(value)
+        self.__obj.discard(value)
 
     def clear(self):
         self.__obj -= self.__values
         self.__values.clear()
 
+    def pop(self):
+        item = self.__values.pop()
+        self.__obj.discard(item)
+        return item
+
+    def __ior__(self, other):
+        self.__values |= other
+        return self
+
+    def __iand__(self, other):
+        self.__values &= other
+        return self
+
+    def __ixor__(self, other):
+        self.__values ^= other
+        return self
+
+    def __isub__(self, other):
+        self.__values -= other
+        return self
+
 
 class DictView(MutableMapping):
-    """A DictView is a mutable reference to a subset of a Mapping's keys."""
+    """A slice of a dict that allows mutable access to a subset of its keys."""
 
     def __init__(self, obj: MutableMapping, keys: Iterable):
         self.__obj = obj
