@@ -111,18 +111,40 @@ class TestSetView:
         assert sview | s2 == SetView(s, ("foo", "baz", "bar"))
 
         # intersection
-        s2 = {"baz"}
+        s2 = {"baz", "biff"}
         assert sview & s2 == SetView(s, ("baz",))
         assert s2 & sview == {"baz"}
 
         # difference
-        assert sview - {"baz"} == SetView(s, ("foo",))
-        assert {"baz", "biff"} - sview == SetView(s, ())
+        s2 = {"baz", "biff"}
+        assert sview - s2 == SetView(s, ("foo",))
+        assert s2 - sview == SetView(s, ())
 
         # symmetric difference
         s2 = {"baz", "quux", "biff"}
         assert sview ^ s2 == SetView(s, ("foo", "quux"))
         assert s2 ^ sview == SetView(s, ("foo", "quux"))
 
-    def test_in_place_set_ops(self, s, sview):
-        pass
+    def test_update(self, s, sview):
+        init_s = copy.copy(s)
+        sview |= {"bar", "biff"}
+        assert sview == SetView(s, ("foo", "baz", "bar"))
+        assert s == init_s
+
+    def test_intersection_update(self, s, sview):
+        init_s = copy.copy(s)
+        sview &= {"baz", "biff"}
+        assert sview == SetView(s, ("baz",))
+        assert s == init_s
+
+    def test_difference_update(self, s, sview):
+        init_s = copy.copy(s)
+        sview -= {"baz", "biff"}
+        assert sview == SetView(s, ("foo",))
+        assert s == init_s
+
+    def test_symmetric_difference_update(self, s, sview):
+        init_s = copy.copy(s)
+        sview ^= {"baz", "quux", "biff"}
+        assert sview == SetView(s, ("foo", "quux"))
+        assert s == init_s
