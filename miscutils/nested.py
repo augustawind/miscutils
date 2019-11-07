@@ -20,13 +20,13 @@ Path DSL
 
 The syntax of the path DSL is:
 
-```python
-path            ::=  accessor [accessor [accessor ...]]
-accessor        ::=  lhs_operator parameter [rhs_operator]
-lhs_operator    ::=  "." | "[" | "#"
-rhs_operator    ::=  "]"
-parameter       ::=  string
-```
+.. code-block::
+
+    path            ::=  accessor [accessor [accessor ...]]
+    accessor        ::=  lhs_operator parameter [rhs_operator]
+    lhs_operator    ::=  "." | "[" | "#"
+    rhs_operator    ::=  "]"
+    parameter       ::=  string
 
 A ``path`` is just a sequence of alternating operators and parameters, where
 each operator describe how to access each parameter. These pairs form a
