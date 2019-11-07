@@ -47,7 +47,14 @@ def test_default_factory():
             return "".join(reversed(s)).lower()
 
         SPIDER: str
-        BEATLE: str
-        WORM: str
 
     assert Bug.SPIDER == "redips"
+
+
+def test_explicit_values():
+    class Bug(Const):
+        SPIDER = "recluse"
+        BEATLE: str
+
+    assert Bug.SPIDER == "recluse"
+    assert Bug.BEATLE == "beatle"
