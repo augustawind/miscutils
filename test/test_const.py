@@ -53,8 +53,10 @@ def test_default_factory():
 
 def test_explicit_values():
     class Bug(Const):
-        SPIDER = "recluse"
+        SPIDER: str = "Recluse"
         BEATLE: str
 
-    assert Bug.SPIDER == "recluse"
+    assert Bug.SPIDER == "Recluse"
     assert Bug.BEATLE == "beatle"
+    assert Bug["SPIDER"] == "Recluse"
+    assert Bug.items() == (("SPIDER", "Recluse"), ("BEATLE", "beatle"))

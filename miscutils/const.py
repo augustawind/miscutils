@@ -7,11 +7,24 @@ class ConstError(TypeError):
 
 class ConstMeta(type):
     def __new__(cls, name, bases, ns):
-        ns["_items_"] = {}
+        # Extract defined constants
+        items = {
+            key: val
+            for key, val in ns.items()
+            if key != "default_factory" and not key.startswith("__")
+        }
+        for key in items:
+            del ns[key]
+
+        # Generate values for constants that are only named (e.g. FOO: str)
         types = ns.get("__annotations__", {})
-        factory = ns.get("default_factory", str.lower)
+        factory = ns.pop("default_factory", str.lower)
         for field_name in types:
-            ns["_items_"][field_name] = factory(field_name)
+            if field_name not in items:
+                items[field_name] = factory(field_name)
+
+        ns["_items_"] = items
+
         return super().__new__(cls, name, bases, ns)
 
     def __getitem__(cls, item):
