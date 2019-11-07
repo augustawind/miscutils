@@ -29,6 +29,8 @@ class DictSet(MutableMapping, Set):
     def __str__(self):
         return f"{self.__class__.__name__}({self.__dict})"
 
+    __repr__ = __str__
+
     def update(self, *args, **kwargs):
         self.__dict.update(*args, **kwargs)
 
@@ -125,6 +127,11 @@ class FrozenDict(Mapping):
     def __init__(self, iterable=(), **kwargs):
         self.__dict = dict(iterable, **kwargs)
 
+    def __str__(self):
+        return f"{self.__class__.__name__}({self.__dict})"
+
+    __repr__ = __str__
+
     def __getitem__(self, item):
         return self.__dict[item]
 
@@ -141,6 +148,11 @@ class FrozenDictSet(FrozenDict, Set):
 
 class Namespace(dict):
     """A dict that supports dot-access of its keys."""
+
+    def __str__(self):
+        return f"{self.__class__.__name__}({dict.__str__(self)})"
+
+    __repr__ = __str__
 
     def __getattr__(self, attr):
         return self[attr]

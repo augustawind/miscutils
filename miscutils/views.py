@@ -10,7 +10,7 @@ class DictView(MutableMapping):
         self.__keys = set(keys)
 
     def __str__(self):
-        return f"{type(self).__name__}({dict((k, self.__obj[k]) for k in self.__keys)})"
+        return f"{type(self).__name__}({dict(self)})"
 
     __repr__ = __str__
 
