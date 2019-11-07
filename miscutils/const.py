@@ -49,7 +49,7 @@ delete an attribute on a Const will raise a :class:`ConstError`.
 from types import MappingProxyType
 from typing import Any, Mapping
 
-__all__ = ("Const", "ConstError", "ConstMeta")
+__all__ = ["Const", "ConstError", "ConstMeta"]
 
 
 class ConstError(TypeError):

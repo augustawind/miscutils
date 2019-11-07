@@ -230,14 +230,13 @@ def parse_actions(path):
 
         if accessor is None:
             # If no current accessor, assert that char is an lhs operator
-
             if not lhs_op:
                 raise MissingLHSOperator(char)
+
             # Assign the new operator
             accessor = lhs_op
         else:
             # If char is not an operator char, append it to current value
-
             if char not in OP_CHARS:
                 item += char
 
@@ -252,18 +251,16 @@ def parse_actions(path):
 
             if rhs_op_char:
                 # ...raise error if the current char is an lhs op char
-
                 if lhs_op:
                     raise MissingRHSOperator(accessor, char)
-                # ...clear current op if current char is the rhs op char
 
+                # ...clear current op if current char is the rhs op char
                 if char == rhs_op_char:
                     accessor = None
 
                 continue
 
             # Else if the current op has no rhs op char...
-
             if lhs_op:
                 # ...if current char is an lhs op char, start new accessor
                 accessor = lhs_op
@@ -272,15 +269,12 @@ def parse_actions(path):
                 raise UnexpectedRHSOperator(char)
 
     # Process final accessor if it had no rhs op char
-
     if accessor is not None:
         # Raise an error if no value was present
-
         if not item:
             raise MissingValueChar(accessor)
 
         # Raise an error if op expects a rhs op char
-
         if accessor in RHS_OPS:
             for char, op in LHS_OPS.items():
                 if op is accessor:

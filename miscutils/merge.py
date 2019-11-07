@@ -2,6 +2,8 @@
 import itertools
 from collections.abc import Mapping
 
+__all__ = ["merge"]
+
 
 def merge(*args: Mapping, _depth: int = 0, **kwargs) -> Mapping:
     """Compose one or more mappings with kwargs.

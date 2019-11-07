@@ -1,5 +1,13 @@
 from collections.abc import Iterable, Mapping, MutableMapping, Set
 
+__all__ = [
+    "DictSet",
+    "FrozenDict",
+    "FrozenDictSet",
+    "FrozenNamespace",
+    "Namespace",
+]
+
 
 class DictSet(MutableMapping, Set):
     """A dict that also functions as a set over its keys.

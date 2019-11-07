@@ -1,3 +1,6 @@
+__all__ = ["classproperty"]
+
+
 class classproperty:
     """Turn a classmethod into a read-only property descriptor."""
 

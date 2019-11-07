@@ -1,6 +1,8 @@
 """views - mutable slices of compound data types"""
 from collections.abc import Iterable, Mapping, MutableMapping, MutableSet, Set
 
+__all__ = ["DictView", "SetView"]
+
 
 class DictView(MutableMapping):
     """A slice of a dict that allows mutable access to a subset of its keys."""

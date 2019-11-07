@@ -3,6 +3,8 @@ from functools import partial
 
 from .merge import merge
 
+__all__ = ["setdefault"]
+
 
 def setdefault(
     value,
