@@ -1,6 +1,3 @@
-from collections.abc import Mapping
-
-
 class ConstError(TypeError):
     pass
 
@@ -34,10 +31,10 @@ class ConstMeta(type):
         return cls.__getitem__(attr)
 
     def __setattr__(cls, attr, value):
-        raise ConstError("cannot rebind const value")
+        raise ConstError("constants are read-only")
 
     def __delattr__(cls, attr):
-        raise ConstError("cannot delete const value")
+        raise ConstError("constants are read-only")
 
     def __iter__(cls):
         return iter(cls._items_)
