@@ -51,13 +51,13 @@ class ConstMeta(type):
         return len(cls.__members__)
 
     def keys(cls):
-        return tuple(cls.__members__.keys())
+        return cls.__members__.keys()
 
     def values(cls):
-        return tuple(cls.__members__.values())
+        return cls.__members__.values()
 
     def items(cls):
-        return tuple(cls.__members__.items())
+        return cls.__members__.items()
 
 
 class Const(metaclass=ConstMeta):

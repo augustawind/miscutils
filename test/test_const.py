@@ -17,13 +17,13 @@ def test_read(bug):
     assert bug.SPIDER == "spider"
     assert bug.BEATLE == "beatle"
     assert bug["WORM"] == "worm"
-    assert bug.keys() == ("SPIDER", "BEATLE", "WORM")
-    assert bug.values() == ("spider", "beatle", "worm")
-    assert bug.items() == (
+    assert set(bug.keys()) == {"SPIDER", "BEATLE", "WORM"}
+    assert set(bug.values()) == {"spider", "beatle", "worm"}
+    assert set(bug.items()) == {
         ("SPIDER", "spider"),
         ("BEATLE", "beatle"),
         ("WORM", "worm"),
-    )
+    }
 
 
 def test_write(bug):
@@ -59,4 +59,4 @@ def test_explicit_values():
     assert Bug.SPIDER == "Recluse"
     assert Bug.BEATLE == "beatle"
     assert Bug["SPIDER"] == "Recluse"
-    assert Bug.items() == (("SPIDER", "Recluse"), ("BEATLE", "beatle"))
+    assert set(Bug.items()) == {("SPIDER", "Recluse"), ("BEATLE", "beatle")}
