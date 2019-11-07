@@ -104,7 +104,7 @@ class ConstMeta(type):
         raise ConstError("'Const' object does not support attribute deletion")
 
     def __iter__(cls):
-        return iter(cls._member_map_)
+        return iter(cls._member_map_.values())
 
     def __len__(cls):
         return len(cls._member_map_)

@@ -22,6 +22,7 @@ def test_read(bug):
         "BEATLE": "beatle",
         "WORM": "worm",
     }
+    assert list(bug) == ["spider", "beatle", "worm"]
 
 
 def test_write(bug):
@@ -58,3 +59,4 @@ def test_explicit_values():
     assert Bug.BEATLE == "beatle"
     assert Bug["SPIDER"] == "Recluse"
     assert Bug.__members__ == {"SPIDER": "Recluse", "BEATLE": "beatle"}
+    assert list(Bug) == ["Recluse", "beatle"]
