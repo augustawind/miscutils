@@ -1,4 +1,4 @@
-"""case - tools for parsing and formatting strings into various cases"""
+"""tools for parsing and formatting strings into various cases"""
 import re
 from typing import List
 
@@ -13,16 +13,19 @@ class CaseStyle:
     There are two sets of attributes that can be overridden on child classes
     to define behavior:
 
-    - For parsing from a string:
-        - **Must** define either ``WORD_PATTERN`` or ``parse``.
-    - For converting into a string:
-        - **Must** define either ``SEPARATOR`` + ``fmt_word`` or ``fmt``
-        - ``fmt_word`` is not actually required, but by default it just returns
-            its input. To customize output you will probably want to define
-            ``fmt_word`` as well as ``SEPARATOR``.
-    - Define ``fmt_1st_word`` if you defined ``fmt_word`` but you need the
-      first word to be formatted differently than the rest. By default all
-      words are formatted using ``fmt_word``.
+    For parsing *from* a case style:
+        - Must define :attr:`WORD_PATTERN`.
+
+    For converting *into* a case style:
+        - Must define :attr:`SEPARATOR`, and you probably want to define
+            :meth:`fmt_word` as well. By default it just returns its input.
+        - You can also override :meth:`fmt`.
+        - Define :meth:`fmt_1st_word` if you defined :meth:`fmt_word` but you
+            need the first word to be formatted differently than the rest. By
+            default all words are formatted using :meth:`fmt_word`.
+
+    For more control over how text is parsed and formatted, you can override
+    :meth:`parse` and :meth:`fmt` directly.
     """
 
     def __init__(self, s: str):
@@ -137,7 +140,7 @@ class CaseStyle:
 
 
 class PascalCase(CaseStyle):
-    """Represents a str in _PascalCase_."""
+    """Represents a str in ``PascalCase``."""
 
     WORD_PATTERN = re.compile(
         r"""
@@ -153,7 +156,7 @@ class PascalCase(CaseStyle):
 
 
 class CamelCase(CaseStyle):
-    """Represents a str in _camelCase_."""
+    """Represents a str in ``camelCase``."""
 
     WORD_PATTERN = re.compile(
         r"""
@@ -175,7 +178,7 @@ class CamelCase(CaseStyle):
 
 
 class SnakeCase(CaseStyle):
-    """Represents a str in _snake_case_."""
+    """Represents a str in ``snake_case``."""
 
     WORD_PATTERN = re.compile(
         r"""
@@ -193,7 +196,7 @@ class SnakeCase(CaseStyle):
 
 
 class KebabCase(CaseStyle):
-    """Represents a str in _kebab-case_."""
+    """Represents a str in ``kebab-case``."""
 
     WORD_PATTERN = re.compile(
         r"""
